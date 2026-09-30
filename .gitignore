@@ -1,0 +1,11 @@
+.env
+
+src/ms-route.Api/bin
+src/ms-route.Api/obj
+src/ms-route.Api/appsettings.*
+tests/**/bin*/
+tests/**/obj*/
+
+.idea
+
+src/ms-route.Api/Config
