@@ -30,6 +30,8 @@ public class CreateRouteService : ICreateRouteUseCase
             CampuseId = request.CampuseId,
             Name = request.Name.Trim(),
             TargetSector = request.TargetSector.Trim(),
+            StartTime = request.StartTime,
+            EndTime = request.EndTime,
             Status = RouteStatus.Active
         };
 
@@ -39,9 +41,11 @@ public class CreateRouteService : ICreateRouteUseCase
         {
             Id = saved.Id,
             Name = saved.Name,
+            CampuseId = saved.CampuseId.ToString(),
             TargetSector = saved.TargetSector,
+            StartTime = saved.StartTime,
+            EndTime = saved.EndTime,
             Status = saved.Status.ToString(),
-            CampuseId = saved.CampuseId,
             CreatedAt = saved.CreatedAt,
             UpdatedAt = saved.UpdatedAt
         };

@@ -1,6 +1,7 @@
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Ports.In;
 using ms_route.Api.Domain.Ports.Out;
+using RouteModel = ms_route.Api.Domain.Model.Route;
 
 namespace ms_route.Api.Application.UseCase;
 
@@ -21,8 +22,9 @@ public class ListRouteService : IListRouteUseCase
         {
             Id = r.Id,
             Name = r.Name,
-            TargetSector = r.TargetSector,
-            Status = r.Status.ToString()
+            CampuseId = r.CampuseId.ToString(),
+            StartTime = r.StartTime,
+            EndTime = r.EndTime
         }).ToList();
     }
 }

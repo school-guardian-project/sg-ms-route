@@ -39,6 +39,7 @@ public class StopRepositoryImpl : IStopRepository
         var entity = new StopEntity
         {
             Id = stop.Id,
+            Name = stop.Name,
             CityId = stop.CityId,
             SchoolId = stop.SchoolId,
             Address = stop.Address,
@@ -62,6 +63,7 @@ public class StopRepositoryImpl : IStopRepository
         if (entity is null)
             throw new InvalidOperationException($"Stop not found: {stop.Id}");
 
+        entity.Name = stop.Name;
         entity.CityId = stop.CityId;
         entity.SchoolId = stop.SchoolId;
         entity.Address = stop.Address;
@@ -88,6 +90,7 @@ public class StopRepositoryImpl : IStopRepository
     private static Stop ToDomain(StopEntity entity) => new()
     {
         Id = entity.Id,
+        Name = entity.Name,
         CityId = entity.CityId,
         SchoolId = entity.SchoolId,
         Address = entity.Address,

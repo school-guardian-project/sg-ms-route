@@ -49,6 +49,8 @@ public class RouteRepositoryImpl : IRouteRepository
             CampuseId = route.CampuseId,
             Name = route.Name,
             TargetSector = route.TargetSector,
+            StartTime = route.StartTime,
+            EndTime = route.EndTime,
             Status = route.Status,
             CreatedAt = route.CreatedAt
         };
@@ -70,6 +72,8 @@ public class RouteRepositoryImpl : IRouteRepository
         entity.Name = route.Name;
         entity.TargetSector = route.TargetSector;
         entity.CampuseId = route.CampuseId;
+        entity.StartTime = route.StartTime;
+        entity.EndTime = route.EndTime;
         entity.Status = route.Status;
         entity.UpdatedAt = route.UpdatedAt;
 
@@ -94,6 +98,8 @@ public class RouteRepositoryImpl : IRouteRepository
         CampuseId = entity.CampuseId,
         Name = entity.Name,
         TargetSector = entity.TargetSector,
+        StartTime = entity.StartTime,
+        EndTime = entity.EndTime,
         Status = entity.Status,
         CreatedAt = entity.CreatedAt,
         UpdatedAt = entity.UpdatedAt
