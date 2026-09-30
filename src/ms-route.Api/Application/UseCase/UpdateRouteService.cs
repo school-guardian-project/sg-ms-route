@@ -26,6 +26,8 @@ public class UpdateRouteService : IUpdateRouteUseCase
         existing.Name = request.Name.Trim();
         existing.TargetSector = request.TargetSector.Trim();
         existing.CampuseId = request.CampuseId;
+        existing.StartTime = request.StartTime;
+        existing.EndTime = request.EndTime;
         existing.UpdatedAt = DateTime.UtcNow;
 
         await _repository.UpdateAsync(existing, ct);

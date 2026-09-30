@@ -20,6 +20,7 @@ public class ListStopService : IListStopUseCase
         return stops.Select(s => new StopListDto
         {
             Id = s.Id,
+            Name = s.Name,
             Address = s.Address,
             Latitude = s.Latitude,
             Longitude = s.Longitude

@@ -36,7 +36,9 @@ public class RouteGrpcService : RouteService.RouteServiceBase
             {
                 CampuseId = Guid.Parse(request.CampuseId),
                 Name = request.Name,
-                TargetSector = request.TargetSector
+                TargetSector = request.TargetSector,
+                StartTime = TimeOnly.FromTimeSpan(request.StartTime),
+                EndTime = TimeOnly.FromTimeSpan(request.EndTime)
             }, context.CancellationToken);
 
             return new CreateRouteResponse
@@ -70,7 +72,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
                 Name = result.Name,
                 TargetSector = result.TargetSector,
                 Status = result.Status,
-                CampuseId = result.CampuseId.ToString()
+                CampuseId = result.CampuseId
             };
         }
         catch (InvalidOperationException ex)
@@ -104,7 +106,9 @@ public class RouteGrpcService : RouteService.RouteServiceBase
             {
                 CampuseId = Guid.Parse(request.CampuseId),
                 Name = request.Name,
-                TargetSector = request.TargetSector
+                TargetSector = request.TargetSector,
+                StartTime = TimeOnly.FromTimeSpan(request.StartTime),
+                EndTime = TimeOnly.FromTimeSpan(request.EndTime)
             }, context.CancellationToken);
 
             return new UpdateRouteResponse

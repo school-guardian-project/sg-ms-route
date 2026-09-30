@@ -16,12 +16,15 @@ public class CreateStopService : ICreateStopUseCase
 
     public async Task<StopResponseDto> ExecuteAsync(StopRequestDto request, CancellationToken ct = default)
     {
+        if (string.IsNullOrWhiteSpace(request.Name))
+            throw new ArgumentException("Name is required.", nameof(request.Name));
         if (string.IsNullOrWhiteSpace(request.Address))
             throw new ArgumentException("Address is required.", nameof(request.Address));
 
         var stop = new Stop
         {
             Id = Guid.NewGuid(),
+            Name = request.Name.Trim(),
             CityId = request.CityId,
             SchoolId = request.SchoolId,
             Address = request.Address.Trim(),
@@ -35,6 +38,7 @@ public class CreateStopService : ICreateStopUseCase
         return new StopResponseDto
         {
             Id = saved.Id,
+            Name = saved.Name,
             Address = saved.Address,
             Latitude = saved.Latitude,
             Longitude = saved.Longitude,

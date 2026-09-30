@@ -31,6 +31,8 @@ public class InMemoryRouteRepository : IRouteRepository
         existing.Name = route.Name;
         existing.TargetSector = route.TargetSector;
         existing.CampuseId = route.CampuseId;
+        existing.StartTime = route.StartTime;
+        existing.EndTime = route.EndTime;
         existing.Status = route.Status;
         existing.UpdatedAt = route.UpdatedAt;
 

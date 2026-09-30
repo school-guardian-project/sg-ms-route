@@ -26,6 +26,8 @@ public class GetRouteService : IGetRouteUseCase
             Name = route.Name,
             CampuseId = route.CampuseId.ToString(),
             TargetSector = route.TargetSector,
+            StartTime = route.StartTime,
+            EndTime = route.EndTime,
             Status = route.Status.ToString(),
             CreatedAt = route.CreatedAt,
             UpdatedAt = route.UpdatedAt

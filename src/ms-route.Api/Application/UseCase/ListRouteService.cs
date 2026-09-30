@@ -23,7 +23,8 @@ public class ListRouteService : IListRouteUseCase
             Id = r.Id,
             Name = r.Name,
             CampuseId = r.CampuseId.ToString(),
-            TargetSector = r.TargetSector
+            StartTime = r.StartTime,
+            EndTime = r.EndTime
         }).ToList();
     }
 }

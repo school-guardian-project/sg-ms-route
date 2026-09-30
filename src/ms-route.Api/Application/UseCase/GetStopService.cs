@@ -22,6 +22,7 @@ public class GetStopService : IGetStopUseCase
         return new StopResponseDto
         {
             Id = stop.Id,
+            Name = stop.Name,
             Address = stop.Address,
             Latitude = stop.Latitude,
             Longitude = stop.Longitude,

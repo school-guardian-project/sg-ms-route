@@ -15,6 +15,8 @@ public class UpdateStopService : IUpdateStopUseCase
 
     public async Task ExecuteAsync(Guid id, StopRequestDto request, CancellationToken ct = default)
     {
+        if (string.IsNullOrWhiteSpace(request.Name))
+            throw new ArgumentException("Name is required.", nameof(request.Name));
         if (string.IsNullOrWhiteSpace(request.Address))
             throw new ArgumentException("Address is required.", nameof(request.Address));
 
@@ -22,6 +24,7 @@ public class UpdateStopService : IUpdateStopUseCase
         if (existing is null)
             throw new InvalidOperationException($"Stop not found: {id}");
 
+        existing.Name = request.Name.Trim();
         existing.CityId = request.CityId;
         existing.SchoolId = request.SchoolId;
         existing.Address = request.Address.Trim();
