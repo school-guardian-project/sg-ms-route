@@ -39,9 +39,9 @@ public class CreateRouteService : ICreateRouteUseCase
         {
             Id = saved.Id,
             Name = saved.Name,
+            CampuseId = saved.CampuseId.ToString(),
             TargetSector = saved.TargetSector,
             Status = saved.Status.ToString(),
-            CampuseId = saved.CampuseId,
             CreatedAt = saved.CreatedAt,
             UpdatedAt = saved.UpdatedAt
         };
