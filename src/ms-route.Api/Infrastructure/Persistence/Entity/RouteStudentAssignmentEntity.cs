@@ -7,5 +7,5 @@ public class RouteStudentAssignmentEntity
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid ProfileId { get; set; }
     public Guid RouteStopId { get; set; }
-    public RouteStudentAssignmentStatus Status { get; set; } = RouteStudentAssignmentStatus.Active;
+    public Status Status { get; set; } = Status.Active;
 }

@@ -7,11 +7,5 @@ public class RouteSchedule
     public DayOfWeek DayOfWeek { get; set; }
     public string Direction { get; set; } = string.Empty;
     public TimeOnly StartTime { get; set; }
-    public RouteScheduleStatus Status { get; set; } = RouteScheduleStatus.Active;
-}
-
-public enum RouteScheduleStatus
-{
-    Active,
-    Inactive
+    public Status Status { get; set; } = Status.Active;
 }

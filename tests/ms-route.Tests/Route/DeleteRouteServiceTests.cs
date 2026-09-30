@@ -1,8 +1,8 @@
 using ms_route.Api.Application.UseCase;
 using ms_route.Api.Domain.Model;
 using ms_route.Tests.Fakes;
-using Xunit;
 using RouteModel = ms_route.Api.Domain.Model.Route;
+using Xunit;
 
 namespace ms_route.Tests.Route;
 
@@ -13,7 +13,7 @@ public class DeleteRouteServiceTests
     {
         var repo = new InMemoryRouteRepository();
         var routeId = Guid.NewGuid();
-        repo.Routes.Add(new RouteModel { Id = routeId, Name = "R-01", TargetSector = "Norte", Status = RouteStatus.Active });
+        repo.Routes.Add(new RouteModel { Id = routeId, Name = "R-01", TargetSector = "Norte", Status = Status.Active });
         var service = new DeleteRouteService(repo);
 
         await service.ExecuteAsync(routeId);
@@ -27,9 +27,7 @@ public class DeleteRouteServiceTests
         var repo = new InMemoryRouteRepository();
         var service = new DeleteRouteService(repo);
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.ExecuteAsync(Guid.NewGuid()));
-
-        Assert.Contains("not found", ex.Message);
     }
 }

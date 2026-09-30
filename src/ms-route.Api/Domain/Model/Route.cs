@@ -8,13 +8,7 @@ public class Route
     public string TargetSector { get; set; } = string.Empty;
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
-    public RouteStatus Status { get; set; } = RouteStatus.Active;
+    public Status Status { get; set; } = Status.Active;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
-}
-
-public enum RouteStatus
-{
-    Active,
-    Inactive
 }

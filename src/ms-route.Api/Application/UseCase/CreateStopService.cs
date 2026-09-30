@@ -1,3 +1,4 @@
+using AutoMapper;
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Model;
 using ms_route.Api.Domain.Ports.In;
@@ -8,10 +9,12 @@ namespace ms_route.Api.Application.UseCase;
 public class CreateStopService : ICreateStopUseCase
 {
     private readonly IStopRepository _repository;
+    private readonly IMapper _mapper;
 
-    public CreateStopService(IStopRepository repository)
+    public CreateStopService(IStopRepository repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
     public async Task<StopResponseDto> ExecuteAsync(StopRequestDto request, CancellationToken ct = default)
@@ -21,32 +24,12 @@ public class CreateStopService : ICreateStopUseCase
         if (string.IsNullOrWhiteSpace(request.Address))
             throw new ArgumentException("Address is required.", nameof(request.Address));
 
-        var stop = new Stop
-        {
-            Id = Guid.NewGuid(),
-            Name = request.Name.Trim(),
-            CityId = request.CityId,
-            SchoolId = request.SchoolId,
-            Address = request.Address.Trim(),
-            Longitude = request.Longitude,
-            Latitude = request.Latitude,
-            Status = StopStatus.Active
-        };
+        var stop = _mapper.Map<Stop>(request);
+        stop.Id = Guid.NewGuid();
+        stop.Status = Status.Active;
 
         var saved = await _repository.SaveAsync(stop, ct);
 
-        return new StopResponseDto
-        {
-            Id = saved.Id,
-            Name = saved.Name,
-            Address = saved.Address,
-            Latitude = saved.Latitude,
-            Longitude = saved.Longitude,
-            CityId = saved.CityId.ToString(),
-            SchoolId = saved.SchoolId.ToString(),
-            Status = saved.Status.ToString(),
-            CreatedAt = saved.CreatedAt,
-            UpdatedAt = saved.UpdatedAt
-        };
+        return _mapper.Map<StopResponseDto>(saved);
     }
 }

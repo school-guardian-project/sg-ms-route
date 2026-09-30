@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using ms_route.Api.Application.Mapper;
 using ms_route.Api.Application.UseCase;
 using ms_route.Api.Domain.Ports.In;
 using ms_route.Api.Domain.Ports.Out;
 using ms_route.Api.Infrastructure.Persistence.Context;
+using ms_route.Api.Infrastructure.Persistence.Mapper;
 using ms_route.Api.Infrastructure.Repository;
 using RouteContext = ms_route.Api.Infrastructure.Persistence.Context.RouteContext;
 
@@ -12,6 +14,14 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddRouteServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddAutoMapper(cfg =>
+        {
+            cfg.AddProfile<RouteProfile>();
+            cfg.AddProfile<StopProfile>();
+            cfg.AddProfile<RoutePersistenceProfile>();
+            cfg.AddProfile<StopPersistenceProfile>();
+        });
+
         services.AddDbContext<RouteContext>(options =>
             options.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection")
@@ -19,6 +29,10 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IRouteRepository, RouteRepositoryImpl>();
         services.AddScoped<IStopRepository, StopRepositoryImpl>();
+        services.AddScoped<IRouteExecutionRepository, RouteExecutionRepositoryImpl>();
+        services.AddScoped<IRouteStudentAssignmentRepository, RouteStudentAssignmentRepositoryImpl>();
+        services.AddScoped<IRouteStopRepository, RouteStopRepositoryImpl>();
+        services.AddScoped<IRouteBusAssignmentRepository, RouteBusAssignmentRepositoryImpl>();
 
         services.AddScoped<ICreateRouteUseCase, CreateRouteService>();
         services.AddScoped<IGetRouteUseCase, GetRouteService>();
@@ -31,6 +45,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IListStopUseCase, ListStopService>();
         services.AddScoped<IUpdateStopUseCase, UpdateStopService>();
         services.AddScoped<IDeleteStopUseCase, DeleteStopService>();
+
+        services.AddScoped<IGetCurrentRouteUseCase, GetCurrentRouteService>();
+        services.AddScoped<IStartTripUseCase, StartTripService>();
+        services.AddScoped<IEndTripUseCase, EndTripService>();
+        services.AddScoped<IGetStudentRouteUseCase, GetStudentRouteService>();
+        services.AddScoped<IAssignStudentToRouteUseCase, AssignStudentToRouteService>();
+        services.AddScoped<IAssignBusToRouteUseCase, AssignBusToRouteService>();
 
         return services;
     }
