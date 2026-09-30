@@ -9,5 +9,5 @@ public class RouteExecutionEntity
     public Guid DriverId { get; set; }
     public DateTime StartDateTime { get; set; }
     public DateTime? EndDateTime { get; set; }
-    public RouteExecutionStatus Status { get; set; } = RouteExecutionStatus.Active;
+    public Status Status { get; set; } = Status.Active;
 }

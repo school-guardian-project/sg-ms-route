@@ -9,13 +9,7 @@ public class Stop
     public string Address { get; set; } = string.Empty;
     public decimal Longitude { get; set; }
     public decimal Latitude { get; set; }
-    public StopStatus Status { get; set; } = StopStatus.Active;
+    public Status Status { get; set; } = Status.Active;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
-}
-
-public enum StopStatus
-{
-    Active,
-    Inactive
 }

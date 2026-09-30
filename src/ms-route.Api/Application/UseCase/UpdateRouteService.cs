@@ -1,3 +1,4 @@
+using AutoMapper;
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Ports.In;
 using ms_route.Api.Domain.Ports.Out;
@@ -8,10 +9,12 @@ namespace ms_route.Api.Application.UseCase;
 public class UpdateRouteService : IUpdateRouteUseCase
 {
     private readonly IRouteRepository _repository;
+    private readonly IMapper _mapper;
 
-    public UpdateRouteService(IRouteRepository repository)
+    public UpdateRouteService(IRouteRepository repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
     public async Task ExecuteAsync(Guid id, RouteRequestDto request, CancellationToken ct = default)
@@ -23,11 +26,7 @@ public class UpdateRouteService : IUpdateRouteUseCase
         if (existing is null)
             throw new InvalidOperationException($"Route not found: {id}");
 
-        existing.Name = request.Name.Trim();
-        existing.TargetSector = request.TargetSector.Trim();
-        existing.CampuseId = request.CampuseId;
-        existing.StartTime = request.StartTime;
-        existing.EndTime = request.EndTime;
+        _mapper.Map(request, existing);
         existing.UpdatedAt = DateTime.UtcNow;
 
         await _repository.UpdateAsync(existing, ct);

@@ -5,11 +5,5 @@ public class RouteBusAssignment
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid BusId { get; set; }
     public Guid RouteId { get; set; }
-    public RouteBusAssignmentStatus Status { get; set; } = RouteBusAssignmentStatus.Active;
-}
-
-public enum RouteBusAssignmentStatus
-{
-    Active,
-    Inactive
+    public Status Status { get; set; } = Status.Active;
 }

@@ -9,5 +9,5 @@ public class RouteScheduleEntity
     public DayOfWeek DayOfWeek { get; set; }
     public string Direction { get; set; } = string.Empty;
     public TimeOnly StartTime { get; set; }
-    public RouteScheduleStatus Status { get; set; } = RouteScheduleStatus.Active;
+    public Status Status { get; set; } = Status.Active;
 }

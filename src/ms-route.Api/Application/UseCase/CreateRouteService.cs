@@ -1,3 +1,4 @@
+using AutoMapper;
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Model;
 using ms_route.Api.Domain.Ports.In;
@@ -9,10 +10,12 @@ namespace ms_route.Api.Application.UseCase;
 public class CreateRouteService : ICreateRouteUseCase
 {
     private readonly IRouteRepository _repository;
+    private readonly IMapper _mapper;
 
-    public CreateRouteService(IRouteRepository repository)
+    public CreateRouteService(IRouteRepository repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
     public async Task<RouteResponseDto> ExecuteAsync(RouteRequestDto request, CancellationToken ct = default)
@@ -24,30 +27,12 @@ public class CreateRouteService : ICreateRouteUseCase
         if (exists)
             throw new InvalidOperationException("Route already exists");
 
-        var route = new RouteModel
-        {
-            Id = Guid.NewGuid(),
-            CampuseId = request.CampuseId,
-            Name = request.Name.Trim(),
-            TargetSector = request.TargetSector.Trim(),
-            StartTime = request.StartTime,
-            EndTime = request.EndTime,
-            Status = RouteStatus.Active
-        };
+        var route = _mapper.Map<RouteModel>(request);
+        route.Id = Guid.NewGuid();
+        route.Status = Status.Active;
 
         var saved = await _repository.SaveAsync(route, ct);
 
-        return new RouteResponseDto
-        {
-            Id = saved.Id,
-            Name = saved.Name,
-            CampuseId = saved.CampuseId.ToString(),
-            TargetSector = saved.TargetSector,
-            StartTime = saved.StartTime,
-            EndTime = saved.EndTime,
-            Status = saved.Status.ToString(),
-            CreatedAt = saved.CreatedAt,
-            UpdatedAt = saved.UpdatedAt
-        };
+        return _mapper.Map<RouteResponseDto>(saved);
     }
 }

@@ -1,30 +1,25 @@
+using AutoMapper;
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Ports.In;
 using ms_route.Api.Domain.Ports.Out;
-using RouteModel = ms_route.Api.Domain.Model.Route;
 
 namespace ms_route.Api.Application.UseCase;
 
 public class ListRouteService : IListRouteUseCase
 {
     private readonly IRouteRepository _repository;
+    private readonly IMapper _mapper;
 
-    public ListRouteService(IRouteRepository repository)
+    public ListRouteService(IRouteRepository repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
     public async Task<IEnumerable<RouteListDto>> ExecuteAsync(CancellationToken ct = default)
     {
         var routes = await _repository.GetAllAsync(ct);
 
-        return routes.Select(r => new RouteListDto
-        {
-            Id = r.Id,
-            Name = r.Name,
-            CampuseId = r.CampuseId.ToString(),
-            StartTime = r.StartTime,
-            EndTime = r.EndTime
-        }).ToList();
+        return _mapper.Map<IEnumerable<RouteListDto>>(routes);
     }
 }
