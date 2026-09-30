@@ -1,0 +1,9 @@
+namespace ms_route.Api.Application.Dto;
+
+public class RouteListDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string TargetSector { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+}

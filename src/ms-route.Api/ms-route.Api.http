@@ -1,0 +1,17 @@
+@ms_route.Api_HostAddress = http://localhost:5224
+
+GET {{ms_route.Api_HostAddress}}/api/routes
+Accept: application/json
+
+###
+
+POST {{ms_route.Api_HostAddress}}/api/routes
+Content-Type: application/json
+
+{
+  "campuseId": "11111111-1111-1111-1111-111111111111",
+  "name": "R-01",
+  "targetSector": "Norte"
+}
+
+###

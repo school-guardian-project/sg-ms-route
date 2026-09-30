@@ -1,0 +1,71 @@
+syntax = "proto3";
+option csharp_namespace = "ms_route.Api.Infrastructure.Grpc";
+package route;
+
+service RouteService {
+  rpc CreateRoute (CreateRouteRequest) returns (CreateRouteResponse);
+  rpc GetRoute (GetRouteRequest) returns (GetRouteResponse);
+  rpc ListRoutes (ListRoutesRequest) returns (ListRoutesResponse);
+  rpc UpdateRoute (UpdateRouteRequest) returns (UpdateRouteResponse);
+  rpc DeleteRoute (DeleteRouteRequest) returns (DeleteRouteResponse);
+}
+
+message CreateRouteRequest {
+  string campuse_id = 1;
+  string name = 2;
+  string target_sector = 3;
+}
+
+message CreateRouteResponse {
+  string id = 1;
+  string name = 2;
+  string target_sector = 3;
+  string status = 4;
+}
+
+message GetRouteRequest {
+  string id = 1;
+}
+
+message GetRouteResponse {
+  string id = 1;
+  string name = 2;
+  string target_sector = 3;
+  string status = 4;
+  string campuse_id = 5;
+}
+
+message ListRoutesRequest {}
+
+message RouteListItem {
+  string id = 1;
+  string name = 2;
+  string target_sector = 3;
+  string status = 4;
+}
+
+message ListRoutesResponse {
+  repeated RouteListItem routes = 1;
+}
+
+message UpdateRouteRequest {
+  string id = 1;
+  string campuse_id = 2;
+  string name = 3;
+  string target_sector = 4;
+}
+
+message UpdateRouteResponse {
+  string id = 1;
+  string name = 2;
+  string target_sector = 3;
+  string status = 4;
+}
+
+message DeleteRouteRequest {
+  string id = 1;
+}
+
+message DeleteRouteResponse {
+  bool success = 1;
+}
