@@ -26,6 +26,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUpdateRouteUseCase, UpdateRouteService>();
         services.AddScoped<IDeleteRouteUseCase, DeleteRouteService>();
 
+        services.AddScoped<ICreateStopUseCase, CreateStopService>();
+        services.AddScoped<IGetStopUseCase, GetStopService>();
+        services.AddScoped<IListStopUseCase, ListStopService>();
+        services.AddScoped<IUpdateStopUseCase, UpdateStopService>();
+        services.AddScoped<IDeleteStopUseCase, DeleteStopService>();
+
         return services;
     }
 }

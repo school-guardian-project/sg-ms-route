@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ms_route.Api.Application.Dto;
-using ms_route.Api.Domain.Model;
-using ms_route.Api.Domain.Ports.Out;
+using ms_route.Api.Domain.Ports.In;
 
 namespace ms_route.Api.Infrastructure.Controller;
 
@@ -9,102 +8,58 @@ namespace ms_route.Api.Infrastructure.Controller;
 [Route("api/stops")]
 public class StopController : ControllerBase
 {
-    private readonly IStopRepository _repository;
+    private readonly ICreateStopUseCase _createUseCase;
+    private readonly IGetStopUseCase _getUseCase;
+    private readonly IListStopUseCase _listUseCase;
+    private readonly IUpdateStopUseCase _updateUseCase;
+    private readonly IDeleteStopUseCase _deleteUseCase;
 
-    public StopController(IStopRepository repository)
+    public StopController(
+        ICreateStopUseCase createUseCase,
+        IGetStopUseCase getUseCase,
+        IListStopUseCase listUseCase,
+        IUpdateStopUseCase updateUseCase,
+        IDeleteStopUseCase deleteUseCase)
     {
-        _repository = repository;
+        _createUseCase = createUseCase;
+        _getUseCase = getUseCase;
+        _listUseCase = listUseCase;
+        _updateUseCase = updateUseCase;
+        _deleteUseCase = deleteUseCase;
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] StopRequestDto request, CancellationToken ct)
     {
-        var stop = new Stop
-        {
-            Id = Guid.NewGuid(),
-            CityId = request.CityId,
-            SchoolId = request.SchoolId,
-            Address = request.Address,
-            Longitude = request.Longitude,
-            Latitude = request.Latitude,
-            Status = StopStatus.Active
-        };
-
-        var saved = await _repository.SaveAsync(stop, ct);
-
-        return Ok(new StopResponseDto
-        {
-            Id = saved.Id,
-            Address = saved.Address,
-            Longitude = saved.Longitude,
-            Latitude = saved.Latitude,
-            Status = saved.Status.ToString(),
-            CityId = saved.CityId,
-            SchoolId = saved.SchoolId,
-            CreatedAt = saved.CreatedAt,
-            UpdatedAt = saved.UpdatedAt
-        });
+        var result = await _createUseCase.ExecuteAsync(request, ct);
+        return Ok(result);
     }
 
     [HttpGet]
     public async Task<IActionResult> List(CancellationToken ct)
     {
-        var stops = await _repository.GetAllAsync(ct);
-
-        return Ok(stops.Select(s => new StopListDto
-        {
-            Id = s.Id,
-            Address = s.Address,
-            Longitude = s.Longitude,
-            Latitude = s.Latitude,
-            Status = s.Status.ToString()
-        }));
+        var result = await _listUseCase.ExecuteAsync(ct);
+        return Ok(result);
     }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
-        var stop = await _repository.GetByIdAsync(id, ct);
-        if (stop is null)
-            return NotFound();
-
-        return Ok(new StopResponseDto
-        {
-            Id = stop.Id,
-            Address = stop.Address,
-            Longitude = stop.Longitude,
-            Latitude = stop.Latitude,
-            Status = stop.Status.ToString(),
-            CityId = stop.CityId,
-            SchoolId = stop.SchoolId,
-            CreatedAt = stop.CreatedAt,
-            UpdatedAt = stop.UpdatedAt
-        });
+        var result = await _getUseCase.ExecuteAsync(id, ct);
+        return Ok(result);
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] StopRequestDto request, CancellationToken ct)
     {
-        var existing = await _repository.GetByIdAsync(id, ct);
-        if (existing is null)
-            return NotFound();
-
-        existing.CityId = request.CityId;
-        existing.SchoolId = request.SchoolId;
-        existing.Address = request.Address;
-        existing.Longitude = request.Longitude;
-        existing.Latitude = request.Latitude;
-        existing.UpdatedAt = DateTime.UtcNow;
-
-        await _repository.UpdateAsync(existing, ct);
-
+        await _updateUseCase.ExecuteAsync(id, request, ct);
         return Ok();
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
-        await _repository.DeleteAsync(id, ct);
+        await _deleteUseCase.ExecuteAsync(id, ct);
         return NoContent();
     }
 }

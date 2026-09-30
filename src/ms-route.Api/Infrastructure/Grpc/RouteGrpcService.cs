@@ -89,8 +89,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         {
             Id = r.Id.ToString(),
             Name = r.Name,
-            TargetSector = r.TargetSector,
-            Status = r.Status
+            TargetSector = r.TargetSector
         }));
 
         return response;
