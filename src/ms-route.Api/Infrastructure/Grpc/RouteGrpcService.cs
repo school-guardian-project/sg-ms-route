@@ -68,11 +68,11 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         }
         catch (ArgumentException ex)
         {
-            throw new RpcException(new Grpc.Core.Status(StatusCode.InvalidArgument, ex.Message));
+            throw new RpcException(new global::Grpc.Core.Status(StatusCode.InvalidArgument, ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            throw new RpcException(new Grpc.Core.Status(StatusCode.AlreadyExists, ex.Message));
+            throw new RpcException(new global::Grpc.Core.Status(StatusCode.AlreadyExists, ex.Message));
         }
     }
 
@@ -94,7 +94,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         }
         catch (InvalidOperationException ex)
         {
-            throw new RpcException(new Grpc.Core.Status(StatusCode.NotFound, ex.Message));
+            throw new RpcException(new global::Grpc.Core.Status(StatusCode.NotFound, ex.Message));
         }
     }
 
@@ -135,11 +135,11 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         }
         catch (ArgumentException ex)
         {
-            throw new RpcException(new Grpc.Core.Status(StatusCode.InvalidArgument, ex.Message));
+            throw new RpcException(new global::Grpc.Core.Status(StatusCode.InvalidArgument, ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            throw new RpcException(new Grpc.Core.Status(StatusCode.NotFound, ex.Message));
+            throw new RpcException(new global::Grpc.Core.Status(StatusCode.NotFound, ex.Message));
         }
     }
 
@@ -154,7 +154,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         }
         catch (InvalidOperationException ex)
         {
-            throw new RpcException(new Grpc.Core.Status(StatusCode.NotFound, ex.Message));
+            throw new RpcException(new global::Grpc.Core.Status(StatusCode.NotFound, ex.Message));
         }
     }
 
@@ -176,7 +176,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         }
         catch (InvalidOperationException ex)
         {
-            throw new RpcException(new Grpc.Core.Status(StatusCode.NotFound, ex.Message));
+            throw new RpcException(new global::Grpc.Core.Status(StatusCode.NotFound, ex.Message));
         }
     }
 
@@ -198,7 +198,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         }
         catch (InvalidOperationException ex)
         {
-            throw new RpcException(new Grpc.Core.Status(StatusCode.NotFound, ex.Message));
+            throw new RpcException(new global::Grpc.Core.Status(StatusCode.NotFound, ex.Message));
         }
     }
 
@@ -223,7 +223,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         }
         catch (InvalidOperationException ex)
         {
-            throw new RpcException(new Grpc.Core.Status(StatusCode.FailedPrecondition, ex.Message));
+            throw new RpcException(new global::Grpc.Core.Status(StatusCode.FailedPrecondition, ex.Message));
         }
     }
 
@@ -244,7 +244,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         }
         catch (InvalidOperationException ex)
         {
-            throw new RpcException(new Grpc.Core.Status(StatusCode.NotFound, ex.Message));
+            throw new RpcException(new global::Grpc.Core.Status(StatusCode.NotFound, ex.Message));
         }
     }
 
@@ -270,7 +270,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         }
         catch (InvalidOperationException ex)
         {
-            throw new RpcException(new Grpc.Core.Status(StatusCode.FailedPrecondition, ex.Message));
+            throw new RpcException(new global::Grpc.Core.Status(StatusCode.FailedPrecondition, ex.Message));
         }
     }
 
@@ -294,7 +294,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         }
         catch (InvalidOperationException ex)
         {
-            throw new RpcException(new Grpc.Core.Status(StatusCode.FailedPrecondition, ex.Message));
+            throw new RpcException(new global::Grpc.Core.Status(StatusCode.FailedPrecondition, ex.Message));
         }
     }
 }
