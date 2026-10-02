@@ -7,7 +7,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddRouteServices(builder.Configuration);
-builder.Services.AddGrpc();
 
 var app = builder.Build();
 
