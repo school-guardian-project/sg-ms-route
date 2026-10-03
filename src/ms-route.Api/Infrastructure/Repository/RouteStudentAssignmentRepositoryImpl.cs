@@ -32,6 +32,15 @@ public class RouteStudentAssignmentRepositoryImpl : IRouteStudentAssignmentRepos
         return ToDomain(entity);
     }
 
+    public async Task<RouteStudentAssignment?> GetActiveByProfileIdAsync(Guid profileId, CancellationToken ct = default)
+    {
+        var entity = await _context.RouteStudentAssignments
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.ProfileId == profileId && a.Status == Status.Active, ct);
+
+        return entity is null ? null : ToDomain(entity);
+    }
+
     private static RouteStudentAssignment ToDomain(RouteStudentAssignmentEntity entity) => new()
     {
         Id = entity.Id,
