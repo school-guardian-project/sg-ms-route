@@ -27,6 +27,22 @@ public class RouteStopRepositoryImpl : IRouteStopRepository
         return entities.Select(ToDomain).ToList();
     }
 
+    public async Task<IReadOnlyDictionary<Guid, int>> CountByRouteIdsAsync(IEnumerable<Guid> routeIds, CancellationToken ct = default)
+    {
+        var ids = routeIds.Distinct().ToList();
+        if (ids.Count == 0)
+            return new Dictionary<Guid, int>();
+
+        var counts = await _context.RouteStops
+            .AsNoTracking()
+            .Where(rs => ids.Contains(rs.RouteId) && rs.Status == Status.Active)
+            .GroupBy(rs => rs.RouteId)
+            .Select(g => new { RouteId = g.Key, Count = g.Count() })
+            .ToListAsync(ct);
+
+        return counts.ToDictionary(x => x.RouteId, x => x.Count);
+    }
+
     private static RouteStop ToDomain(RouteStopEntity entity) => new()
     {
         Id = entity.Id,
