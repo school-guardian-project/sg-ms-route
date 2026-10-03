@@ -10,6 +10,15 @@ public class InMemoryRouteStopRepository : IRouteStopRepository
     public Task<IReadOnlyList<RouteStop>> GetByRouteIdAsync(Guid routeId, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<RouteStop>>(RouteStops.Where(rs => rs.RouteId == routeId).ToList());
 
+    public Task<RouteStop?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => Task.FromResult(RouteStops.FirstOrDefault(rs => rs.Id == id));
+
+    public Task<RouteStop> SaveAsync(RouteStop routeStop, CancellationToken ct = default)
+    {
+        RouteStops.Add(routeStop);
+        return Task.FromResult(routeStop);
+    }
+
     public Task<IReadOnlyDictionary<Guid, int>> CountByRouteIdsAsync(IEnumerable<Guid> routeIds, CancellationToken ct = default)
     {
         var ids = routeIds.ToHashSet();

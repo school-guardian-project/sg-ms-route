@@ -28,7 +28,6 @@ public class UpdateStopService : IUpdateStopUseCase
             throw new InvalidOperationException($"Stop not found: {id}");
 
         _mapper.Map(request, existing);
-        existing.UpdatedAt = DateTime.UtcNow;
 
         await _repository.UpdateAsync(existing, ct);
     }

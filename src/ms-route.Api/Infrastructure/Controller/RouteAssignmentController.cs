@@ -10,13 +10,26 @@ public class RouteAssignmentController : ControllerBase
 {
     private readonly IAssignStudentToRouteUseCase _assignStudentToRouteUseCase;
     private readonly IGetStudentStopOnRouteUseCase _getStudentStopOnRouteUseCase;
+    private readonly IAttachStopToRouteUseCase _attachStopToRouteUseCase;
 
     public RouteAssignmentController(
         IAssignStudentToRouteUseCase assignStudentToRouteUseCase,
-        IGetStudentStopOnRouteUseCase getStudentStopOnRouteUseCase)
+        IGetStudentStopOnRouteUseCase getStudentStopOnRouteUseCase,
+        IAttachStopToRouteUseCase attachStopToRouteUseCase)
     {
         _assignStudentToRouteUseCase = assignStudentToRouteUseCase;
         _getStudentStopOnRouteUseCase = getStudentStopOnRouteUseCase;
+        _attachStopToRouteUseCase = attachStopToRouteUseCase;
+    }
+
+    [HttpPost("{routeId:guid}/stops")]
+    public async Task<IActionResult> AttachStop(
+        Guid routeId,
+        [FromBody] AttachStopRequest request,
+        CancellationToken ct)
+    {
+        var result = await _attachStopToRouteUseCase.ExecuteAsync(routeId, request.StopId, ct);
+        return Ok(result);
     }
 
     [HttpPost("{routeId:guid}/students")]
@@ -44,6 +57,11 @@ public class RouteAssignmentController : ControllerBase
     public class AssignStudentRequest
     {
         public Guid StudentId { get; set; }
+        public Guid StopId { get; set; }
+    }
+
+    public class AttachStopRequest
+    {
         public Guid StopId { get; set; }
     }
 }

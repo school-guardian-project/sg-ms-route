@@ -11,6 +11,4 @@ public class RouteEntity
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
     public Status Status { get; set; } = Status.Active;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime? UpdatedAt { get; set; }
 }

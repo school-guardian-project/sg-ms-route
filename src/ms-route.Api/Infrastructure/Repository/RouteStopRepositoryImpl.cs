@@ -16,6 +16,15 @@ public class RouteStopRepositoryImpl : IRouteStopRepository
         _context = context;
     }
 
+    public async Task<RouteStop?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        var entity = await _context.RouteStops
+            .AsNoTracking()
+            .FirstOrDefaultAsync(rs => rs.Id == id, ct);
+
+        return entity is null ? null : ToDomain(entity);
+    }
+
     public async Task<IReadOnlyList<RouteStop>> GetByRouteIdAsync(Guid routeId, CancellationToken ct = default)
     {
         var entities = await _context.RouteStops
@@ -41,6 +50,23 @@ public class RouteStopRepositoryImpl : IRouteStopRepository
             .ToListAsync(ct);
 
         return counts.ToDictionary(x => x.RouteId, x => x.Count);
+    }
+
+    public async Task<RouteStop> SaveAsync(RouteStop routeStop, CancellationToken ct = default)
+    {
+        var entity = new RouteStopEntity
+        {
+            Id = routeStop.Id,
+            RouteId = routeStop.RouteId,
+            StopId = routeStop.StopId,
+            OrderSequence = routeStop.OrderSequence,
+            Status = routeStop.Status
+        };
+
+        await _context.RouteStops.AddAsync(entity, ct);
+        await _context.SaveChangesAsync(ct);
+
+        return ToDomain(entity);
     }
 
     private static RouteStop ToDomain(RouteStopEntity entity) => new()

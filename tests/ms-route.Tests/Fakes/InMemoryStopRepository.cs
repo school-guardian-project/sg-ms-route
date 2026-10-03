@@ -10,6 +10,12 @@ public class InMemoryStopRepository : IStopRepository
     public Task<Stop?> GetByIdAsync(Guid id, CancellationToken ct = default)
         => Task.FromResult(Stops.FirstOrDefault(s => s.Id == id));
 
+    public Task<IReadOnlyList<Stop>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct = default)
+    {
+        var idList = ids.ToHashSet();
+        return Task.FromResult<IReadOnlyList<Stop>>(Stops.Where(s => idList.Contains(s.Id)).ToList());
+    }
+
     public Task<IReadOnlyList<Stop>> GetAllAsync(CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<Stop>>(Stops.ToList());
 
@@ -29,7 +35,6 @@ public class InMemoryStopRepository : IStopRepository
         existing.Latitude = stop.Latitude;
         existing.Longitude = stop.Longitude;
         existing.Status = stop.Status;
-        existing.UpdatedAt = stop.UpdatedAt;
 
         return Task.CompletedTask;
     }

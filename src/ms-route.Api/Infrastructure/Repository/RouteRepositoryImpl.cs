@@ -51,8 +51,7 @@ public class RouteRepositoryImpl : IRouteRepository
             TargetSector = route.TargetSector,
             StartTime = route.StartTime,
             EndTime = route.EndTime,
-            Status = route.Status,
-            CreatedAt = route.CreatedAt
+            Status = route.Status
         };
 
         await _context.Routes.AddAsync(entity, ct);
@@ -75,7 +74,6 @@ public class RouteRepositoryImpl : IRouteRepository
         entity.StartTime = route.StartTime;
         entity.EndTime = route.EndTime;
         entity.Status = route.Status;
-        entity.UpdatedAt = route.UpdatedAt;
 
         await _context.SaveChangesAsync(ct);
     }
@@ -100,8 +98,6 @@ public class RouteRepositoryImpl : IRouteRepository
         TargetSector = entity.TargetSector,
         StartTime = entity.StartTime,
         EndTime = entity.EndTime,
-        Status = entity.Status,
-        CreatedAt = entity.CreatedAt,
-        UpdatedAt = entity.UpdatedAt
+        Status = entity.Status
     };
 }

@@ -37,6 +37,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRouteStudentAssignmentRepository, RouteStudentAssignmentRepositoryImpl>();
         services.AddScoped<IRouteStopRepository, RouteStopRepositoryImpl>();
         services.AddScoped<IRouteBusAssignmentRepository, RouteBusAssignmentRepositoryImpl>();
+        services.AddScoped<ICityRepository, CityRepositoryImpl>();
 
         services.AddScoped<ICreateRouteUseCase, CreateRouteService>();
         services.AddScoped<IGetRouteUseCase, GetRouteService>();
@@ -49,6 +50,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IListStopUseCase, ListStopService>();
         services.AddScoped<IUpdateStopUseCase, UpdateStopService>();
         services.AddScoped<IDeleteStopUseCase, DeleteStopService>();
+
+        services.AddScoped<IListCityUseCase, ListCityService>();
+        services.AddScoped<IAttachStopToRouteUseCase, AttachStopToRouteService>();
 
         services.AddScoped<IRouteSearchStrategy, ScheduleSearchStrategy>();
         services.AddScoped<IRouteSearchStrategy, RouteNameSearchStrategy>();
