@@ -11,6 +11,7 @@ public class StopController : ControllerBase
     private readonly ICreateStopUseCase _createUseCase;
     private readonly IGetStopUseCase _getUseCase;
     private readonly IListStopUseCase _listUseCase;
+    private readonly ISearchStopUseCase _searchUseCase;
     private readonly IUpdateStopUseCase _updateUseCase;
     private readonly IDeleteStopUseCase _deleteUseCase;
 
@@ -18,12 +19,14 @@ public class StopController : ControllerBase
         ICreateStopUseCase createUseCase,
         IGetStopUseCase getUseCase,
         IListStopUseCase listUseCase,
+        ISearchStopUseCase searchUseCase,
         IUpdateStopUseCase updateUseCase,
         IDeleteStopUseCase deleteUseCase)
     {
         _createUseCase = createUseCase;
         _getUseCase = getUseCase;
         _listUseCase = listUseCase;
+        _searchUseCase = searchUseCase;
         _updateUseCase = updateUseCase;
         _deleteUseCase = deleteUseCase;
     }
@@ -39,6 +42,13 @@ public class StopController : ControllerBase
     public async Task<IActionResult> List(CancellationToken ct)
     {
         var result = await _listUseCase.ExecuteAsync(ct);
+        return Ok(result);
+    }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> Search([FromQuery] string search, CancellationToken ct)
+    {
+        var result = await _searchUseCase.ExecuteAsync(search, ct);
         return Ok(result);
     }
 

@@ -11,6 +11,7 @@ public class RouteController : ControllerBase
     private readonly ICreateRouteUseCase _createUseCase;
     private readonly IGetRouteUseCase _getUseCase;
     private readonly IListRouteUseCase _listUseCase;
+    private readonly ISearchRouteUseCase _searchUseCase;
     private readonly IUpdateRouteUseCase _updateUseCase;
     private readonly IDeleteRouteUseCase _deleteUseCase;
 
@@ -18,12 +19,14 @@ public class RouteController : ControllerBase
         ICreateRouteUseCase createUseCase,
         IGetRouteUseCase getUseCase,
         IListRouteUseCase listUseCase,
+        ISearchRouteUseCase searchUseCase,
         IUpdateRouteUseCase updateUseCase,
         IDeleteRouteUseCase deleteUseCase)
     {
         _createUseCase = createUseCase;
         _getUseCase = getUseCase;
         _listUseCase = listUseCase;
+        _searchUseCase = searchUseCase;
         _updateUseCase = updateUseCase;
         _deleteUseCase = deleteUseCase;
     }
@@ -39,6 +42,13 @@ public class RouteController : ControllerBase
     public async Task<IActionResult> List(CancellationToken ct)
     {
         var result = await _listUseCase.ExecuteAsync(ct);
+        return Ok(result);
+    }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> Search([FromQuery] string search, CancellationToken ct)
+    {
+        var result = await _searchUseCase.ExecuteAsync(search, ct);
         return Ok(result);
     }
 
