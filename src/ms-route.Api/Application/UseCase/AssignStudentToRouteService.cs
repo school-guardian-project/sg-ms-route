@@ -1,4 +1,3 @@
-using AutoMapper;
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Model;
 using ms_route.Api.Domain.Ports.In;
@@ -10,34 +9,39 @@ public class AssignStudentToRouteService : IAssignStudentToRouteUseCase
 {
     private readonly IRouteStudentAssignmentRepository _assignmentRepository;
     private readonly IRouteStopRepository _routeStopRepository;
-    private readonly IMapper _mapper;
 
     public AssignStudentToRouteService(
         IRouteStudentAssignmentRepository assignmentRepository,
-        IRouteStopRepository routeStopRepository,
-        IMapper mapper)
+        IRouteStopRepository routeStopRepository)
     {
         _assignmentRepository = assignmentRepository;
         _routeStopRepository = routeStopRepository;
-        _mapper = mapper;
     }
 
     public async Task<StudentAssignmentDto> ExecuteAsync(Guid routeId, Guid studentId, Guid stopId, CancellationToken ct = default)
     {
         var routeStops = await _routeStopRepository.GetByRouteIdAsync(routeId, ct);
-        if (!routeStops.Any(rs => rs.StopId == stopId))
+        var routeStop = routeStops.FirstOrDefault(rs => rs.StopId == stopId);
+        if (routeStop is null)
             throw new InvalidOperationException("The stop does not belong to this route");
 
         var assignment = new RouteStudentAssignment
         {
             Id = Guid.NewGuid(),
             ProfileId = studentId,
-            RouteStopId = stopId,
+            RouteStopId = routeStop.Id,
             Status = Status.Active
         };
 
         var saved = await _assignmentRepository.SaveAsync(assignment, ct);
 
-        return _mapper.Map<StudentAssignmentDto>(saved);
+        return new StudentAssignmentDto
+        {
+            Id = saved.Id,
+            RouteId = routeId,
+            StudentId = saved.ProfileId,
+            StopId = stopId,
+            Status = saved.Status.ToString()
+        };
     }
 }

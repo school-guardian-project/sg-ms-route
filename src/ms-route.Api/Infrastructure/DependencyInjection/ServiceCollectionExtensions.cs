@@ -59,6 +59,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGetCurrentRouteUseCase, GetCurrentRouteService>();
         services.AddScoped<IStartTripUseCase, StartTripService>();
         services.AddScoped<IEndTripUseCase, EndTripService>();
+        services.AddScoped<IGetCurrentTripUseCase, GetCurrentTripService>();
+        services.AddScoped<IGetStudentStopOnRouteUseCase, GetStudentStopOnRouteService>();
         services.AddScoped<IGetStudentRouteUseCase, GetStudentRouteService>();
         services.AddScoped<IAssignStudentToRouteUseCase, AssignStudentToRouteService>();
         services.AddScoped<IAssignBusToRouteUseCase, AssignBusToRouteService>();
