@@ -25,23 +25,31 @@ public class AssignStudentToRouteService : IAssignStudentToRouteUseCase
         if (routeStop is null)
             throw new InvalidOperationException("The stop does not belong to this route");
 
-        var assignment = new RouteStudentAssignment
+        var assignment = await _assignmentRepository.GetActiveByProfileIdAsync(studentId, ct);
+        if (assignment is null)
         {
-            Id = Guid.NewGuid(),
-            ProfileId = studentId,
-            RouteStopId = routeStop.Id,
-            Status = Status.Active
-        };
-
-        var saved = await _assignmentRepository.SaveAsync(assignment, ct);
+            assignment = new RouteStudentAssignment
+            {
+                Id = Guid.NewGuid(),
+                ProfileId = studentId,
+                RouteStopId = routeStop.Id,
+                Status = Status.Active
+            };
+            await _assignmentRepository.SaveAsync(assignment, ct);
+        }
+        else
+        {
+            assignment.RouteStopId = routeStop.Id;
+            await _assignmentRepository.UpdateAsync(assignment, ct);
+        }
 
         return new StudentAssignmentDto
         {
-            Id = saved.Id,
+            Id = assignment.Id,
             RouteId = routeId,
-            StudentId = saved.ProfileId,
+            StudentId = assignment.ProfileId,
             StopId = stopId,
-            Status = saved.Status.ToString()
+            Status = assignment.Status.ToString()
         };
     }
 }

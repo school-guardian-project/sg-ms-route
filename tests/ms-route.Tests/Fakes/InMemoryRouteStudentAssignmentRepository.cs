@@ -13,6 +13,15 @@ public class InMemoryRouteStudentAssignmentRepository : IRouteStudentAssignmentR
         return Task.FromResult(assignment);
     }
 
+    public Task<RouteStudentAssignment> UpdateAsync(RouteStudentAssignment assignment, CancellationToken ct = default)
+    {
+        var index = Assignments.FindIndex(a => a.Id == assignment.Id);
+        if (index >= 0)
+            Assignments[index] = assignment;
+
+        return Task.FromResult(assignment);
+    }
+
     public Task<RouteStudentAssignment?> GetActiveByProfileIdAsync(Guid profileId, CancellationToken ct = default)
         => Task.FromResult(Assignments.FirstOrDefault(a => a.ProfileId == profileId && a.Status == Status.Active));
 }
