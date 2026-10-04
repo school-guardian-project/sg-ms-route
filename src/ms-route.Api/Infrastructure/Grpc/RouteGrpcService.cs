@@ -53,7 +53,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         {
             var result = await _createUseCase.ExecuteAsync(new RouteRequestDto
             {
-                CampuseId = Guid.Parse(request.CampuseId),
+                CampuseId = ParseId(request.CampuseId, "campuse_id"),
                 Name = request.Name,
                 TargetSector = request.TargetSector
             }, context.CancellationToken);
@@ -63,7 +63,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
                 Id = result.Id.ToString(),
                 Name = result.Name,
                 TargetSector = result.TargetSector,
-                Status = RouteStatus.Active.ToString()
+                Status = result.Status
             };
         }
         catch (ArgumentException ex)
@@ -81,14 +81,14 @@ public class RouteGrpcService : RouteService.RouteServiceBase
     {
         try
         {
-            var result = await _getUseCase.ExecuteAsync(Guid.Parse(request.Id), context.CancellationToken);
+            var result = await _getUseCase.ExecuteAsync(ParseId(request.Id, "route_id"), context.CancellationToken);
 
             return new GetRouteResponse
             {
                 Id = result.Id.ToString(),
                 Name = result.Name,
                 TargetSector = result.TargetSector,
-                Status = RouteStatus.Active.ToString(),
+                Status = result.Status,
                 CampuseId = result.CampuseId
             };
         }
@@ -118,9 +118,9 @@ public class RouteGrpcService : RouteService.RouteServiceBase
     {
         try
         {
-            await _updateUseCase.ExecuteAsync(Guid.Parse(request.Id), new RouteRequestDto
+            await _updateUseCase.ExecuteAsync(ParseId(request.Id, "route_id"), new RouteRequestDto
             {
-                CampuseId = Guid.Parse(request.CampuseId),
+                CampuseId = ParseId(request.CampuseId, "campuse_id"),
                 Name = request.Name,
                 TargetSector = request.TargetSector
             }, context.CancellationToken);
@@ -148,7 +148,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
     {
         try
         {
-            await _deleteUseCase.ExecuteAsync(Guid.Parse(request.Id), context.CancellationToken);
+            await _deleteUseCase.ExecuteAsync(ParseId(request.Id, "route_id"), context.CancellationToken);
 
             return new DeleteRouteResponse { Success = true };
         }
@@ -163,7 +163,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
     {
         try
         {
-            var result = await _getCurrentRouteUseCase.ExecuteAsync(Guid.Parse(request.DriverId), context.CancellationToken);
+            var result = await _getCurrentRouteUseCase.ExecuteAsync(ParseId(request.DriverId, "driver_id"), context.CancellationToken);
 
             return new GetCurrentRouteResponse
             {
@@ -171,7 +171,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
                 Name = result.Name,
                 CampuseId = result.CampuseId,
                 TargetSector = result.TargetSector,
-                Status = RouteStatus.Active.ToString()
+                Status = result.Status
             };
         }
         catch (InvalidOperationException ex)
@@ -185,7 +185,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
     {
         try
         {
-            var result = await _getStudentRouteUseCase.ExecuteAsync(Guid.Parse(request.StudentId), context.CancellationToken);
+            var result = await _getStudentRouteUseCase.ExecuteAsync(ParseId(request.StudentId, "student_id"), context.CancellationToken);
 
             return new GetStudentRouteResponse
             {
@@ -193,7 +193,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
                 Name = result.Name,
                 CampuseId = result.CampuseId,
                 TargetSector = result.TargetSector,
-                Status = RouteStatus.Active.ToString()
+                Status = result.Status
             };
         }
         catch (InvalidOperationException ex)
@@ -208,9 +208,9 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         try
         {
             var result = await _startTripUseCase.ExecuteAsync(
-                Guid.Parse(request.RouteId),
-                Guid.Parse(request.BusId),
-                Guid.Parse(request.DriverId),
+                ParseId(request.RouteId, "route_id"),
+                ParseId(request.BusId, "bus_id"),
+                ParseId(request.DriverId, "driver_id"),
                 context.CancellationToken);
 
             return new StartTripResponse
@@ -218,7 +218,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
                 Id = result.Id.ToString(),
                 BusId = result.BusId.ToString(),
                 DriverId = result.DriverId.ToString(),
-                Status = RouteStatus.Active.ToString()
+                Status = result.Status
             };
         }
         catch (InvalidOperationException ex)
@@ -232,14 +232,14 @@ public class RouteGrpcService : RouteService.RouteServiceBase
     {
         try
         {
-            var result = await _endTripUseCase.ExecuteAsync(Guid.Parse(request.TripId), context.CancellationToken);
+            var result = await _endTripUseCase.ExecuteAsync(ParseId(request.TripId, "trip_id"), context.CancellationToken);
 
             return new EndTripResponse
             {
                 Id = result.Id.ToString(),
                 BusId = result.BusId.ToString(),
                 DriverId = result.DriverId.ToString(),
-                Status = RouteStatus.Active.ToString()
+                Status = result.Status
             };
         }
         catch (InvalidOperationException ex)
@@ -254,9 +254,9 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         try
         {
             var result = await _assignStudentUseCase.ExecuteAsync(
-                Guid.Parse(request.RouteId),
-                Guid.Parse(request.StudentId),
-                Guid.Parse(request.StopId),
+                ParseId(request.RouteId, "route_id"),
+                ParseId(request.StudentId, "student_id"),
+                ParseId(request.StopId, "stop_id"),
                 context.CancellationToken);
 
             return new AssignStudentToRouteResponse
@@ -265,7 +265,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
                 RouteId = result.RouteId.ToString(),
                 StudentId = result.StudentId.ToString(),
                 StopId = result.StopId.ToString(),
-                Status = RouteStatus.Active.ToString()
+                Status = result.Status
             };
         }
         catch (InvalidOperationException ex)
@@ -280,8 +280,8 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         try
         {
             var result = await _assignBusUseCase.ExecuteAsync(
-                Guid.Parse(request.RouteId),
-                Guid.Parse(request.BusId),
+                ParseId(request.RouteId, "route_id"),
+                ParseId(request.BusId, "bus_id"),
                 context.CancellationToken);
 
             return new AssignBusToRouteResponse
@@ -289,12 +289,20 @@ public class RouteGrpcService : RouteService.RouteServiceBase
                 Id = result.Id.ToString(),
                 RouteId = result.RouteId.ToString(),
                 BusId = result.BusId.ToString(),
-                Status = RouteStatus.Active.ToString()
+                Status = result.Status
             };
         }
         catch (InvalidOperationException ex)
         {
             throw new RpcException(new global::Grpc.Core.Status(StatusCode.FailedPrecondition, ex.Message));
         }
+    }
+
+    private static Guid ParseId(string value, string field)
+    {
+        if (!Guid.TryParse(value, out var id))
+            throw new RpcException(new global::Grpc.Core.Status(
+                StatusCode.InvalidArgument, $"Invalid {field}, use UUID: {value}"));
+        return id;
     }
 }
