@@ -27,7 +27,6 @@ public class UpdateRouteService : IUpdateRouteUseCase
             throw new InvalidOperationException($"Route not found: {id}");
 
         _mapper.Map(request, existing);
-        existing.UpdatedAt = DateTime.UtcNow;
 
         await _repository.UpdateAsync(existing, ct);
     }

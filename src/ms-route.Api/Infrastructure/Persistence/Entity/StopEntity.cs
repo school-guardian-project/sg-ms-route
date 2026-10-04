@@ -12,6 +12,4 @@ public class StopEntity
     public decimal Longitude { get; set; }
     public decimal Latitude { get; set; }
     public Status Status { get; set; } = Status.Active;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime? UpdatedAt { get; set; }
 }

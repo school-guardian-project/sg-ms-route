@@ -34,7 +34,6 @@ public class InMemoryRouteRepository : IRouteRepository
         existing.StartTime = route.StartTime;
         existing.EndTime = route.EndTime;
         existing.Status = route.Status;
-        existing.UpdatedAt = route.UpdatedAt;
 
         return Task.CompletedTask;
     }

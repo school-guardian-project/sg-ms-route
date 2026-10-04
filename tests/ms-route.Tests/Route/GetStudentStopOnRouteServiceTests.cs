@@ -2,6 +2,7 @@ using ms_route.Api.Application.UseCase;
 using ms_route.Api.Domain.Model;
 using ms_route.Tests.Fakes;
 using Xunit;
+using StopModel = ms_route.Api.Domain.Model.Stop;
 
 namespace ms_route.Tests.Route;
 
@@ -25,7 +26,7 @@ public class GetStudentStopOnRouteServiceTests
         });
 
         var stopRepo = new InMemoryStopRepository();
-        stopRepo.Stops.Add(new Stop { Id = stopId, Name = "Libertad" });
+        stopRepo.Stops.Add(new StopModel { Id = stopId, Name = "Libertad" });
 
         var assignmentRepo = new InMemoryRouteStudentAssignmentRepository();
         assignmentRepo.Assignments.Add(new RouteStudentAssignment

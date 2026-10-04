@@ -56,4 +56,41 @@ public class AssignStudentToRouteServiceTests
 
         Assert.Empty(assignmentRepo.Assignments);
     }
+
+    [Fact]
+    public async Task ExecuteAsync_ConAsignacionPrevia_MueveLaParada()
+    {
+        var routeId = Guid.NewGuid();
+        var studentId = Guid.NewGuid();
+
+        var firstStop = new RouteStop
+        {
+            Id = Guid.NewGuid(),
+            RouteId = routeId,
+            StopId = Guid.NewGuid(),
+            OrderSequence = 1,
+            Status = Status.Active
+        };
+        var secondStop = new RouteStop
+        {
+            Id = Guid.NewGuid(),
+            RouteId = routeId,
+            StopId = Guid.NewGuid(),
+            OrderSequence = 2,
+            Status = Status.Active
+        };
+
+        var routeStopRepo = new InMemoryRouteStopRepository();
+        routeStopRepo.RouteStops.Add(firstStop);
+        routeStopRepo.RouteStops.Add(secondStop);
+
+        var assignmentRepo = new InMemoryRouteStudentAssignmentRepository();
+        var service = new AssignStudentToRouteService(assignmentRepo, routeStopRepo);
+
+        await service.ExecuteAsync(routeId, studentId, firstStop.StopId);
+        await service.ExecuteAsync(routeId, studentId, secondStop.StopId);
+
+        var assignment = Assert.Single(assignmentRepo.Assignments);
+        Assert.Equal(secondStop.Id, assignment.RouteStopId);
+    }
 }

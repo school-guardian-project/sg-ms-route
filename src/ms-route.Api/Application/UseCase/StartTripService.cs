@@ -22,6 +22,7 @@ public class StartTripService : IStartTripUseCase
         var execution = new RouteExecution
         {
             Id = Guid.NewGuid(),
+            RouteId = routeId,
             BusId = busId,
             DriverId = driverId,
             StartDateTime = DateTime.UtcNow,

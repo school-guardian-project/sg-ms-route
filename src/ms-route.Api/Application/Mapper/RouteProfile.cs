@@ -18,7 +18,14 @@ public class RouteProfile : Profile
 
         CreateMap<RouteRequestDto, RouteModel>();
 
+        CreateMap<RouteModel, RouteDetailDto>()
+            .ForMember(dest => dest.CampuseId, opt => opt.MapFrom(src => src.CampuseId.ToString()))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+
         CreateMap<RouteExecution, TripResponseDto>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+
+        CreateMap<RouteBusAssignment, BusAssignmentDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
     }
 }
