@@ -11,15 +11,18 @@ public class RouteAssignmentController : ControllerBase
     private readonly IAssignStudentToRouteUseCase _assignStudentToRouteUseCase;
     private readonly IGetStudentStopOnRouteUseCase _getStudentStopOnRouteUseCase;
     private readonly IAttachStopToRouteUseCase _attachStopToRouteUseCase;
+    private readonly IAssignBusToRouteUseCase _assignBusToRouteUseCase;
 
     public RouteAssignmentController(
         IAssignStudentToRouteUseCase assignStudentToRouteUseCase,
         IGetStudentStopOnRouteUseCase getStudentStopOnRouteUseCase,
-        IAttachStopToRouteUseCase attachStopToRouteUseCase)
+        IAttachStopToRouteUseCase attachStopToRouteUseCase,
+        IAssignBusToRouteUseCase assignBusToRouteUseCase)
     {
         _assignStudentToRouteUseCase = assignStudentToRouteUseCase;
         _getStudentStopOnRouteUseCase = getStudentStopOnRouteUseCase;
         _attachStopToRouteUseCase = attachStopToRouteUseCase;
+        _assignBusToRouteUseCase = assignBusToRouteUseCase;
     }
 
     [HttpPost("{routeId:guid}/stops")]
@@ -28,7 +31,8 @@ public class RouteAssignmentController : ControllerBase
         [FromBody] AttachStopRequest request,
         CancellationToken ct)
     {
-        var result = await _attachStopToRouteUseCase.ExecuteAsync(routeId, request.StopId, ct);
+        var result = await _attachStopToRouteUseCase.ExecuteAsync(routeId, request.StopId,
+            ct);
         return Ok(result);
     }
 
@@ -38,9 +42,33 @@ public class RouteAssignmentController : ControllerBase
         [FromBody] AssignStudentRequest request,
         CancellationToken ct)
     {
-        var result = await _assignStudentToRouteUseCase.ExecuteAsync(
-            routeId, request.StudentId, request.StopId, ct);
-        return Ok(result);
+        try
+        {
+            var result = await _assignStudentToRouteUseCase.ExecuteAsync(
+                routeId, request.StudentId, request.StopId, ct);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPut("{routeId:guid}/bus")]
+    public async Task<IActionResult> AssignBus(
+        Guid routeId,
+        [FromBody] AssignBusRequest request,
+        CancellationToken ct)
+    {
+        try
+        {
+            var result = await _assignBusToRouteUseCase.ExecuteAsync(routeId, request.BusId, ct);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpGet("{routeId:guid}/students/{studentProfileId:guid}")]
@@ -63,5 +91,10 @@ public class RouteAssignmentController : ControllerBase
     public class AttachStopRequest
     {
         public Guid StopId { get; set; }
+    }
+
+    public class AssignBusRequest
+    {
+        public Guid BusId { get; set; }
     }
 }
