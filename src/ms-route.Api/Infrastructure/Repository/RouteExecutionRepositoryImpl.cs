@@ -30,6 +30,7 @@ public class RouteExecutionRepositoryImpl : IRouteExecutionRepository
         var entity = new RouteExecutionEntity
         {
             Id = execution.Id,
+            RouteId = execution.RouteId,
             BusId = execution.BusId,
             DriverId = execution.DriverId,
             StartDateTime = execution.StartDateTime,
@@ -69,6 +70,7 @@ public class RouteExecutionRepositoryImpl : IRouteExecutionRepository
     private static RouteExecution ToDomain(RouteExecutionEntity entity) => new()
     {
         Id = entity.Id,
+        RouteId = entity.RouteId,
         BusId = entity.BusId,
         DriverId = entity.DriverId,
         StartDateTime = entity.StartDateTime,

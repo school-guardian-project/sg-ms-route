@@ -9,17 +9,20 @@ namespace ms_route.Api.Application.UseCase;
 public class GetCurrentRouteService : IGetCurrentRouteUseCase
 {
     private readonly IRouteRepository _routeRepository;
+    private readonly IRouteExecutionRepository _executionRepository;
     private readonly IRouteStopRepository _routeStopRepository;
     private readonly IStopRepository _stopRepository;
     private readonly IMapper _mapper;
 
     public GetCurrentRouteService(
         IRouteRepository routeRepository,
+        IRouteExecutionRepository executionRepository,
         IRouteStopRepository routeStopRepository,
         IStopRepository stopRepository,
         IMapper mapper)
     {
         _routeRepository = routeRepository;
+        _executionRepository = executionRepository;
         _routeStopRepository = routeStopRepository;
         _stopRepository = stopRepository;
         _mapper = mapper;
@@ -27,8 +30,10 @@ public class GetCurrentRouteService : IGetCurrentRouteUseCase
 
     public async Task<RouteDetailDto> ExecuteAsync(Guid driverId, CancellationToken ct = default)
     {
-        var routes = await _routeRepository.GetAllAsync(ct);
-        var route = routes.FirstOrDefault();
+        var execution = await _executionRepository.GetActiveByDriverAsync(driverId, ct);
+        var route = execution is null
+            ? null
+            : await _routeRepository.GetByIdAsync(execution.RouteId, ct);
 
         if (route is null)
             throw new InvalidOperationException("No route assigned");
