@@ -1,8 +1,11 @@
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using ms_route.Api.Infrastructure.DependencyInjection;
 using ms_route.Api.Infrastructure.Grpc;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.ConfigureKestrel(options => options.Protocols = HttpProtocols.Http1AndHttp2);
 
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
