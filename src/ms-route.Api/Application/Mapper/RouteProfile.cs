@@ -24,5 +24,8 @@ public class RouteProfile : Profile
 
         CreateMap<RouteExecution, TripResponseDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+
+        CreateMap<RouteBusAssignment, BusAssignmentDto>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
     }
 }
