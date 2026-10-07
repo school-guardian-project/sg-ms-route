@@ -204,6 +204,14 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         {
             var result = await _getStudentRouteUseCase.ExecuteAsync(ParseId(request.StudentId, "student_id"), context.CancellationToken);
 
+            // Sin ruta asignada: NotFound, igual que en REST. Antes esto era una
+            // excepcion y el RPC devolvia Unknown.
+            if (result is null)
+            {
+                throw new RpcException(new global::Grpc.Core.Status(
+                    StatusCode.NotFound, "student has no active route assigned"));
+            }
+
             var response = new GetStudentRouteResponse
             {
                 Id = result.Id.ToString(),

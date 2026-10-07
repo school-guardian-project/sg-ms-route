@@ -30,6 +30,6 @@ public class RouteDetailController : ControllerBase
     public async Task<IActionResult> GetStudentRoute(Guid studentId, CancellationToken ct)
     {
         var result = await _getStudentRouteUseCase.ExecuteAsync(studentId, ct);
-        return Ok(result);
+        return result is null ? NotFound() : Ok(result);
     }
 }
