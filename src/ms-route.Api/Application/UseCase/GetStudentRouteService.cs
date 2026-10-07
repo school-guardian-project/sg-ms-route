@@ -28,7 +28,7 @@ public class GetStudentRouteService : IGetStudentRouteUseCase
         _mapper = mapper;
     }
 
-    public async Task<RouteDetailDto> ExecuteAsync(Guid studentId, CancellationToken ct = default)
+    public async Task<RouteDetailDto?> ExecuteAsync(Guid studentId, CancellationToken ct = default)
     {
         var assignment = await _assignmentRepository.GetActiveByProfileIdAsync(studentId, ct);
         var routeStop = assignment is null
@@ -38,8 +38,10 @@ public class GetStudentRouteService : IGetStudentRouteUseCase
             ? null
             : await _routeRepository.GetByIdAsync(routeStop.RouteId, ct);
 
+        // Sin asignacion activa todavia: es el estado esperado de un estudiante
+        // recien registrado, no una falla. El controlador responde 404.
         if (route is null)
-            throw new InvalidOperationException("No route assigned yet");
+            return null;
 
         var detail = _mapper.Map<RouteDetailDto>(route);
         await PopulateStopsAsync(detail, route.Id, ct);
