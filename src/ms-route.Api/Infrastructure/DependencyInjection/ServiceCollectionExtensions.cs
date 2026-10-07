@@ -7,6 +7,7 @@ using ms_route.Api.Domain.Ports.In;
 using ms_route.Api.Domain.Ports.Out;
 using ms_route.Api.Infrastructure.Persistence.Context;
 using ms_route.Api.Infrastructure.Persistence.Mapper;
+using ms_route.Api.Infrastructure.External;
 using ms_route.Api.Infrastructure.Repository;
 using RouteNameSearchStrategy = ms_route.Api.Application.Search.Route.NameSearchStrategy;
 using StopNameSearchStrategy = ms_route.Api.Application.Search.Stop.NameSearchStrategy;
@@ -37,7 +38,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRouteStudentAssignmentRepository, RouteStudentAssignmentRepositoryImpl>();
         services.AddScoped<IRouteStopRepository, RouteStopRepositoryImpl>();
         services.AddScoped<IRouteBusAssignmentRepository, RouteBusAssignmentRepositoryImpl>();
+        services.AddScoped<IRouteScheduleRepository, RouteScheduleRepositoryImpl>();
         services.AddScoped<ICityRepository, CityRepositoryImpl>();
+
+        services.AddSingleton(TimeProvider.System);
+        services.AddHttpClient<IFleetService, FleetService>(client =>
+            client.BaseAddress = new Uri(configuration["Fleet:BaseUrl"] ?? "http://ms-fleet:8080"));
 
         services.AddScoped<ICreateRouteUseCase, CreateRouteService>();
         services.AddScoped<IGetRouteUseCase, GetRouteService>();
@@ -61,6 +67,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISearchStopUseCase, SearchStopService>();
 
         services.AddScoped<IGetCurrentRouteUseCase, GetCurrentRouteService>();
+        services.AddScoped<IGetDriverRouteTodayUseCase, GetDriverRouteTodayService>();
         services.AddScoped<IStartTripUseCase, StartTripService>();
         services.AddScoped<IEndTripUseCase, EndTripService>();
         services.AddScoped<IGetCurrentTripUseCase, GetCurrentTripService>();

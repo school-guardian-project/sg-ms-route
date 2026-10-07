@@ -18,4 +18,7 @@ public class InMemoryRouteBusAssignmentRepository : IRouteBusAssignmentRepositor
 
     public Task<RouteBusAssignment?> GetActiveByRouteIdAsync(Guid routeId, CancellationToken ct = default)
         => Task.FromResult(Assignments.FirstOrDefault(a => a.RouteId == routeId && a.Status == Status.Active));
+
+    public Task<RouteBusAssignment?> GetActiveByBusIdAsync(Guid busId, CancellationToken ct = default)
+        => Task.FromResult(Assignments.FirstOrDefault(a => a.BusId == busId && a.Status == Status.Active));
 }
