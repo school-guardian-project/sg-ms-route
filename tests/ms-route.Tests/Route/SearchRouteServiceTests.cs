@@ -20,7 +20,7 @@ public class SearchRouteServiceTests
         };
 
         return new SearchRouteService(
-            new ListRouteService(routeRepo, routeStopRepo, TestMapper.Create()),
+            new ListRouteService(routeRepo, routeStopRepo, new InMemorySchoolCampusRepository(), new FakeTenantProvider(), TestMapper.Create()),
             strategies);
     }
 

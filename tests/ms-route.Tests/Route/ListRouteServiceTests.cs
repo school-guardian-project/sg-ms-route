@@ -14,7 +14,7 @@ public class ListRouteServiceTests
         var repo = new InMemoryRouteRepository();
         repo.Routes.Add(new RouteModel { Id = Guid.NewGuid(), Name = "R-01", TargetSector = "Norte", Status = Status.Active });
         repo.Routes.Add(new RouteModel { Id = Guid.NewGuid(), Name = "R-02", TargetSector = "Sur", Status = Status.Active });
-        var service = new ListRouteService(repo, new InMemoryRouteStopRepository(), TestMapper.Create());
+        var service = new ListRouteService(repo, new InMemoryRouteStopRepository(), new InMemorySchoolCampusRepository(), new FakeTenantProvider(), TestMapper.Create());
 
         var result = await service.ExecuteAsync();
 
@@ -25,7 +25,7 @@ public class ListRouteServiceTests
     public async Task ExecuteAsync_SinRutas_RetornaListaVacia()
     {
         var repo = new InMemoryRouteRepository();
-        var service = new ListRouteService(repo, new InMemoryRouteStopRepository(), TestMapper.Create());
+        var service = new ListRouteService(repo, new InMemoryRouteStopRepository(), new InMemorySchoolCampusRepository(), new FakeTenantProvider(), TestMapper.Create());
 
         var result = await service.ExecuteAsync();
 
@@ -46,7 +46,7 @@ public class ListRouteServiceTests
         stopRepo.RouteStops.Add(new RouteStop { RouteId = routeNorte.Id });
         stopRepo.RouteStops.Add(new RouteStop { RouteId = routeNorte.Id, Status = Status.Inactive });
 
-        var service = new ListRouteService(repo, stopRepo, TestMapper.Create());
+        var service = new ListRouteService(repo, stopRepo, new InMemorySchoolCampusRepository(), new FakeTenantProvider(), TestMapper.Create());
 
         var result = (await service.ExecuteAsync()).ToList();
 
