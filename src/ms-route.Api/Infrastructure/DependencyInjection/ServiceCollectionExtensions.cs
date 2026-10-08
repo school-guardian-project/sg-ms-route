@@ -5,6 +5,7 @@ using ms_route.Api.Application.Search.Stop;
 using ms_route.Api.Application.UseCase;
 using ms_route.Api.Domain.Ports.In;
 using ms_route.Api.Domain.Ports.Out;
+using ms_route.Api.Infrastructure.Auth;
 using ms_route.Api.Infrastructure.Persistence.Context;
 using ms_route.Api.Infrastructure.Persistence.Mapper;
 using ms_route.Api.Infrastructure.External;
@@ -40,6 +41,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRouteBusAssignmentRepository, RouteBusAssignmentRepositoryImpl>();
         services.AddScoped<IRouteScheduleRepository, RouteScheduleRepositoryImpl>();
         services.AddScoped<ICityRepository, CityRepositoryImpl>();
+        services.AddScoped<ISchoolCampusRepository, SchoolCampusRepositoryImpl>();
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<ITenantProvider, JwtTenantProvider>();
 
         services.AddSingleton(TimeProvider.System);
         services.AddHttpClient<IFleetService, FleetService>(client =>

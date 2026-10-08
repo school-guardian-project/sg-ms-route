@@ -26,11 +26,17 @@ public class RouteRepositoryImpl : IRouteRepository
         return entity is null ? null : ToDomain(entity);
     }
 
-    public async Task<IReadOnlyList<RouteModel>> GetAllAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<RouteModel>> GetAllAsync(IReadOnlyCollection<Guid>? campusIds = null, CancellationToken ct = default)
     {
-        var entities = await _context.Routes
-            .AsNoTracking()
-            .ToListAsync(ct);
+        var query = _context.Routes.AsNoTracking();
+
+        if (campusIds is not null)
+        {
+            var ids = campusIds.ToArray();
+            query = query.Where(r => ids.Contains(r.CampuseId));
+        }
+
+        var entities = await query.ToListAsync(ct);
 
         return entities.Select(ToDomain).ToList();
     }
