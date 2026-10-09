@@ -26,11 +26,17 @@ public class RouteRepositoryImpl : IRouteRepository
         return entity is null ? null : ToDomain(entity);
     }
 
-    public async Task<IReadOnlyList<RouteModel>> GetAllAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<RouteModel>> GetAllAsync(IReadOnlyCollection<Guid>? campusIds = null, CancellationToken ct = default)
     {
-        var entities = await _context.Routes
-            .AsNoTracking()
-            .ToListAsync(ct);
+        var query = _context.Routes.AsNoTracking();
+
+        if (campusIds is not null)
+        {
+            var ids = campusIds.ToArray();
+            query = query.Where(r => ids.Contains(r.CampuseId));
+        }
+
+        var entities = await query.ToListAsync(ct);
 
         return entities.Select(ToDomain).ToList();
     }
@@ -51,8 +57,7 @@ public class RouteRepositoryImpl : IRouteRepository
             TargetSector = route.TargetSector,
             StartTime = route.StartTime,
             EndTime = route.EndTime,
-            Status = route.Status,
-            CreatedAt = route.CreatedAt
+            Status = route.Status
         };
 
         await _context.Routes.AddAsync(entity, ct);
@@ -75,7 +80,6 @@ public class RouteRepositoryImpl : IRouteRepository
         entity.StartTime = route.StartTime;
         entity.EndTime = route.EndTime;
         entity.Status = route.Status;
-        entity.UpdatedAt = route.UpdatedAt;
 
         await _context.SaveChangesAsync(ct);
     }
@@ -100,8 +104,6 @@ public class RouteRepositoryImpl : IRouteRepository
         TargetSector = entity.TargetSector,
         StartTime = entity.StartTime,
         EndTime = entity.EndTime,
-        Status = entity.Status,
-        CreatedAt = entity.CreatedAt,
-        UpdatedAt = entity.UpdatedAt
+        Status = entity.Status
     };
 }

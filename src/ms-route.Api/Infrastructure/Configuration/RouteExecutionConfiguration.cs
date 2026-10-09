@@ -9,6 +9,7 @@ public class RouteExecutionConfiguration : IEntityTypeConfiguration<RouteExecuti
     public void Configure(EntityTypeBuilder<RouteExecutionEntity> builder)
     {
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.RouteId).IsRequired();
         builder.Property(x => x.BusId).IsRequired();
         builder.Property(x => x.DriverId).IsRequired();
         builder.Property(x => x.StartDateTime).IsRequired();

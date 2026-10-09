@@ -38,6 +38,24 @@ public class RouteBusAssignmentRepositoryImpl : IRouteBusAssignmentRepository
             .AnyAsync(a => a.RouteId == routeId && a.Status == Status.Active, ct);
     }
 
+    public async Task<RouteBusAssignment?> GetActiveByRouteIdAsync(Guid routeId, CancellationToken ct = default)
+    {
+        var entity = await _context.RouteBusAssignments
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.RouteId == routeId && a.Status == Status.Active, ct);
+
+        return entity is null ? null : ToDomain(entity);
+    }
+
+    public async Task<RouteBusAssignment?> GetActiveByBusIdAsync(Guid busId, CancellationToken ct = default)
+    {
+        var entity = await _context.RouteBusAssignments
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.BusId == busId && a.Status == Status.Active, ct);
+
+        return entity is null ? null : ToDomain(entity);
+    }
+
     private static RouteBusAssignment ToDomain(RouteBusAssignmentEntity entity) => new()
     {
         Id = entity.Id,

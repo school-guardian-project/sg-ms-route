@@ -9,12 +9,12 @@ public class StopConfiguration : IEntityTypeConfiguration<StopEntity>
     public void Configure(EntityTypeBuilder<StopEntity> builder)
     {
         builder.HasKey(x => x.Id);
-        builder.Property(x => x.Name).IsRequired().HasMaxLength(50);
+        builder.Property(x => x.Name).IsRequired().HasMaxLength(30);
         builder.Property(x => x.CityId).IsRequired();
         builder.Property(x => x.SchoolId).IsRequired();
-        builder.Property(x => x.Address).IsRequired().HasMaxLength(255);
-        builder.Property(x => x.Longitude).IsRequired().HasPrecision(12, 2);
-        builder.Property(x => x.Latitude).IsRequired().HasPrecision(12, 2);
+        builder.Property(x => x.Address).IsRequired().HasMaxLength(100);
+        builder.Property(x => x.Longitude).IsRequired().HasPrecision(10, 7);
+        builder.Property(x => x.Latitude).IsRequired().HasPrecision(10, 7);
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
     }
 }

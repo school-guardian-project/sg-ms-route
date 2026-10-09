@@ -15,7 +15,8 @@ public class RouteContext : DbContext
     public DbSet<RouteStudentAssignmentEntity> RouteStudentAssignments => Set<RouteStudentAssignmentEntity>();
     public DbSet<RouteScheduleEntity> RouteSchedules => Set<RouteScheduleEntity>();
     public DbSet<RouteExecutionEntity> RouteExecutions => Set<RouteExecutionEntity>();
-    public DbSet<CityEntity> Cities => Set<CityEntity>();
+    public DbSet<CityRefEntity> Cities => Set<CityRefEntity>();
+    public DbSet<SchoolCampusRefEntity> SchoolCampuses => Set<SchoolCampusRefEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -30,7 +31,11 @@ public class RouteContext : DbContext
         modelBuilder.Entity<RouteStudentAssignmentEntity>().ToTable("RouteStudentAssignments", schema: "Route");
         modelBuilder.Entity<RouteScheduleEntity>().ToTable("RouteSchedule", schema: "Route");
         modelBuilder.Entity<RouteExecutionEntity>().ToTable("RouteExecution", schema: "Route");
-        modelBuilder.Entity<CityEntity>().ToTable("City", schema: "Geographic");
+        modelBuilder.Entity<CityRefEntity>()
+            .HasNoKey()
+            .ToTable("City", "Geographic");
+        modelBuilder.Entity<SchoolCampusRefEntity>()
+            .ToTable("SchoolCampus", "School");
 
         modelBuilder.ApplyConfiguration(new RouteConfiguration());
         modelBuilder.ApplyConfiguration(new StopConfiguration());

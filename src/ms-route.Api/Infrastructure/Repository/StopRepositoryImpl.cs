@@ -25,6 +25,20 @@ public class StopRepositoryImpl : IStopRepository
         return entity is null ? null : ToDomain(entity);
     }
 
+    public async Task<IReadOnlyList<Stop>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct = default)
+    {
+        var idList = ids.Distinct().ToList();
+        if (idList.Count == 0)
+            return new List<Stop>();
+
+        var entities = await _context.Stops
+            .AsNoTracking()
+            .Where(s => idList.Contains(s.Id))
+            .ToListAsync(ct);
+
+        return entities.Select(ToDomain).ToList();
+    }
+
     public async Task<IReadOnlyList<Stop>> GetAllAsync(CancellationToken ct = default)
     {
         var entities = await _context.Stops
@@ -45,8 +59,7 @@ public class StopRepositoryImpl : IStopRepository
             Address = stop.Address,
             Longitude = stop.Longitude,
             Latitude = stop.Latitude,
-            Status = stop.Status,
-            CreatedAt = stop.CreatedAt
+            Status = stop.Status
         };
 
         await _context.Stops.AddAsync(entity, ct);
@@ -70,7 +83,6 @@ public class StopRepositoryImpl : IStopRepository
         entity.Longitude = stop.Longitude;
         entity.Latitude = stop.Latitude;
         entity.Status = stop.Status;
-        entity.UpdatedAt = stop.UpdatedAt;
 
         await _context.SaveChangesAsync(ct);
     }
@@ -96,8 +108,6 @@ public class StopRepositoryImpl : IStopRepository
         Address = entity.Address,
         Longitude = entity.Longitude,
         Latitude = entity.Latitude,
-        Status = entity.Status,
-        CreatedAt = entity.CreatedAt,
-        UpdatedAt = entity.UpdatedAt
+        Status = entity.Status
     };
 }

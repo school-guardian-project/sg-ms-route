@@ -1,8 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ms_route.Api.Application.Dto;
-using ms_route.Api.Infrastructure.Persistence.Entity;
-using RouteContext = ms_route.Api.Infrastructure.Persistence.Context.RouteContext;
+using ms_route.Api.Domain.Ports.In;
 
 namespace ms_route.Api.Infrastructure.Controller;
 
@@ -10,27 +7,17 @@ namespace ms_route.Api.Infrastructure.Controller;
 [Route("api/cities")]
 public class CityController : ControllerBase
 {
-    private readonly RouteContext _context;
+    private readonly IListCityUseCase _listUseCase;
 
-    public CityController(RouteContext context)
+    public CityController(IListCityUseCase listUseCase)
     {
-        _context = context;
+        _listUseCase = listUseCase;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<CityListDto>>> List(CancellationToken ct)
+    public async Task<IActionResult> List(CancellationToken ct)
     {
-        var cities = await _context.Cities
-            .AsNoTracking()
-            .Where(city => city.Status == "Active")
-            .OrderBy(city => city.Name)
-            .Select(city => new CityListDto
-            {
-                Id = city.Id,
-                Name = city.Name
-            })
-            .ToListAsync(ct);
-
-        return Ok(cities);
+        var result = await _listUseCase.ExecuteAsync(ct);
+        return Ok(result);
     }
 }

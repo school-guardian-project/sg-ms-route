@@ -10,6 +10,4 @@ public class StopResponseDto
     public string CityId { get; set; } = string.Empty;
     public string SchoolId { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
 }

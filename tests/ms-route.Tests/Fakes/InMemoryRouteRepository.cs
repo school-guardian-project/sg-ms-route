@@ -11,8 +11,10 @@ public class InMemoryRouteRepository : IRouteRepository
     public Task<RouteModel?> GetByIdAsync(Guid id, CancellationToken ct = default)
         => Task.FromResult(Routes.FirstOrDefault(r => r.Id == id));
 
-    public Task<IReadOnlyList<RouteModel>> GetAllAsync(CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<RouteModel>>(Routes.ToList());
+    public Task<IReadOnlyList<RouteModel>> GetAllAsync(IReadOnlyCollection<Guid>? campusIds = null, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<RouteModel>>(Routes
+            .Where(r => campusIds is null || campusIds.Contains(r.CampuseId))
+            .ToList());
 
     public Task<bool> ExistsByNameAsync(string name, CancellationToken ct = default)
         => Task.FromResult(Routes.Any(r => r.Name == name));
@@ -34,7 +36,6 @@ public class InMemoryRouteRepository : IRouteRepository
         existing.StartTime = route.StartTime;
         existing.EndTime = route.EndTime;
         existing.Status = route.Status;
-        existing.UpdatedAt = route.UpdatedAt;
 
         return Task.CompletedTask;
     }

@@ -32,6 +32,30 @@ public class RouteStudentAssignmentRepositoryImpl : IRouteStudentAssignmentRepos
         return ToDomain(entity);
     }
 
+    public async Task<RouteStudentAssignment> UpdateAsync(RouteStudentAssignment assignment, CancellationToken ct = default)
+    {
+        var entity = await _context.RouteStudentAssignments
+            .FirstOrDefaultAsync(a => a.Id == assignment.Id, ct);
+
+        if (entity is null)
+            throw new InvalidOperationException($"RouteStudentAssignment not found: {assignment.Id}");
+
+        entity.RouteStopId = assignment.RouteStopId;
+        entity.Status = assignment.Status;
+        await _context.SaveChangesAsync(ct);
+
+        return ToDomain(entity);
+    }
+
+    public async Task<RouteStudentAssignment?> GetActiveByProfileIdAsync(Guid profileId, CancellationToken ct = default)
+    {
+        var entity = await _context.RouteStudentAssignments
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.ProfileId == profileId && a.Status == Status.Active, ct);
+
+        return entity is null ? null : ToDomain(entity);
+    }
+
     private static RouteStudentAssignment ToDomain(RouteStudentAssignmentEntity entity) => new()
     {
         Id = entity.Id,

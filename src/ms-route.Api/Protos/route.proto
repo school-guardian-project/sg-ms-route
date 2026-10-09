@@ -14,12 +14,15 @@ service RouteService {
   rpc EndTrip (EndTripRequest) returns (EndTripResponse);
   rpc AssignStudentToRoute (AssignStudentToRouteRequest) returns (AssignStudentToRouteResponse);
   rpc AssignBusToRoute (AssignBusToRouteRequest) returns (AssignBusToRouteResponse);
+  rpc AttachStopToRoute (AttachStopToRouteRequest) returns (AttachStopToRouteResponse);
 }
 
 message CreateRouteRequest {
   string campuse_id = 1;
   string name = 2;
   string target_sector = 3;
+  string start_time = 4;
+  string end_time = 5;
 }
 
 message CreateRouteResponse {
@@ -27,6 +30,8 @@ message CreateRouteResponse {
   string name = 2;
   string target_sector = 3;
   string status = 4;
+  string start_time = 5;
+  string end_time = 6;
 }
 
 message GetRouteRequest {
@@ -39,6 +44,8 @@ message GetRouteResponse {
   string target_sector = 3;
   string status = 4;
   string campuse_id = 5;
+  string start_time = 6;
+  string end_time = 7;
 }
 
 message ListRoutesRequest {}
@@ -57,6 +64,8 @@ message UpdateRouteRequest {
   string campuse_id = 2;
   string name = 3;
   string target_sector = 4;
+  string start_time = 5;
+  string end_time = 6;
 }
 
 message UpdateRouteResponse {
@@ -64,6 +73,8 @@ message UpdateRouteResponse {
   string name = 2;
   string target_sector = 3;
   string status = 4;
+  string start_time = 5;
+  string end_time = 6;
 }
 
 message DeleteRouteRequest {
@@ -84,6 +95,9 @@ message GetCurrentRouteResponse {
   string campuse_id = 3;
   string target_sector = 4;
   string status = 5;
+  string start_time = 6;
+  string end_time = 7;
+  repeated StopItem stops = 8;
 }
 
 message GetStudentRouteRequest {
@@ -96,6 +110,9 @@ message GetStudentRouteResponse {
   string campuse_id = 3;
   string target_sector = 4;
   string status = 5;
+  string start_time = 6;
+  string end_time = 7;
+  repeated StopItem stops = 8;
 }
 
 message StartTripRequest {
@@ -146,4 +163,26 @@ message AssignBusToRouteResponse {
   string route_id = 2;
   string bus_id = 3;
   string status = 4;
+}
+
+message StopItem {
+  string id = 1;
+  string name = 2;
+  string address = 3;
+  double latitude = 4;
+  double longitude = 5;
+  int32 order_sequence = 6;
+}
+
+message AttachStopToRouteRequest {
+  string route_id = 1;
+  string stop_id = 2;
+}
+
+message AttachStopToRouteResponse {
+  string id = 1;
+  string route_id = 2;
+  string stop_id = 3;
+  int32 order_sequence = 4;
+  string status = 5;
 }

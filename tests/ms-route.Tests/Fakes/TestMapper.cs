@@ -9,7 +9,11 @@ public static class TestMapper
     public static IMapper Create()
     {
         var config = new MapperConfiguration(
-            cfg => cfg.AddProfile<RouteProfile>(),
+            cfg =>
+            {
+                cfg.AddProfile<RouteProfile>();
+                cfg.AddProfile<StopProfile>();
+            },
             NullLoggerFactory.Instance);
         return config.CreateMapper();
     }

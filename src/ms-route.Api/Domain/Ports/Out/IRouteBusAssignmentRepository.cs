@@ -6,4 +6,6 @@ public interface IRouteBusAssignmentRepository
 {
     Task<RouteBusAssignment> SaveAsync(RouteBusAssignment assignment, CancellationToken ct = default);
     Task<bool> RouteHasBusAsync(Guid routeId, CancellationToken ct = default);
+    Task<RouteBusAssignment?> GetActiveByRouteIdAsync(Guid routeId, CancellationToken ct = default);
+    Task<RouteBusAssignment?> GetActiveByBusIdAsync(Guid busId, CancellationToken ct = default);
 }
