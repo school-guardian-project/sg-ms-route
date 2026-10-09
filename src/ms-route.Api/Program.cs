@@ -44,6 +44,26 @@ if (app.Environment.IsDevelopment())
 app.MapOpenApi();
 app.MapScalarApiReference();
 app.UseHttpsRedirection();
+
+// Errores de dominio como ProblemDetails (400/404/409) en vez de un 500 con
+// traza: el frontend muestra `detail` dentro del modal que hizo la accion.
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex) when (ex is ArgumentException or InvalidOperationException && !context.Response.HasStarted)
+    {
+        var status = ex is ArgumentException
+            ? StatusCodes.Status400BadRequest
+            : ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase)
+                ? StatusCodes.Status404NotFound
+                : StatusCodes.Status409Conflict;
+        context.Response.StatusCode = status;
+        await Results.Problem(detail: ex.Message, statusCode: status).ExecuteAsync(context);
+    }
+});
 app.UseAuthentication();
 app.MapControllers();
 app.MapGrpcService<RouteGrpcService>();

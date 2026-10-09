@@ -15,7 +15,7 @@ public class SearchStopServiceTests
             new NameSearchStrategy()
         };
 
-        return new SearchStopService(new ListStopService(stopRepo, TestMapper.Create()), strategies);
+        return new SearchStopService(new ListStopService(stopRepo, new InMemoryRouteStopRepository(), new InMemoryRouteRepository(), TestMapper.Create()), strategies);
     }
 
     [Fact]
