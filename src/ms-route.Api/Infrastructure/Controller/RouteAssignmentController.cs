@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Ports.In;
 
@@ -25,6 +26,7 @@ public class RouteAssignmentController : ControllerBase
         _assignBusToRouteUseCase = assignBusToRouteUseCase;
     }
 
+    [EnableRateLimiting("writes")]
     [HttpPost("{routeId:guid}/stops")]
     public async Task<IActionResult> AttachStop(
         Guid routeId,
@@ -36,6 +38,7 @@ public class RouteAssignmentController : ControllerBase
         return Ok(result);
     }
 
+    [EnableRateLimiting("writes")]
     [HttpPost("{routeId:guid}/students")]
     public async Task<IActionResult> AssignStudent(
         Guid routeId,
@@ -54,6 +57,7 @@ public class RouteAssignmentController : ControllerBase
         }
     }
 
+    [EnableRateLimiting("writes")]
     [HttpPut("{routeId:guid}/bus")]
     public async Task<IActionResult> AssignBus(
         Guid routeId,

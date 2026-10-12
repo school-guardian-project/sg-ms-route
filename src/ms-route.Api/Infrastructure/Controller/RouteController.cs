@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Ports.In;
 
@@ -31,6 +32,7 @@ public class RouteController : ControllerBase
         _deleteUseCase = deleteUseCase;
     }
 
+    [EnableRateLimiting("writes")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] RouteRequestDto request, CancellationToken ct)
     {
@@ -59,6 +61,7 @@ public class RouteController : ControllerBase
         return Ok(result);
     }
 
+    [EnableRateLimiting("writes")]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] RouteRequestDto request, CancellationToken ct)
     {
@@ -66,6 +69,7 @@ public class RouteController : ControllerBase
         return Ok();
     }
 
+    [EnableRateLimiting("writes")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
