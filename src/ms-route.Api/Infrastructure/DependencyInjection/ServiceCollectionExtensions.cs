@@ -28,10 +28,11 @@ public static class ServiceCollectionExtensions
             cfg.AddProfile<StopPersistenceProfile>();
         });
 
-        services.AddDbContext<RouteContext>(options =>
-            options.UseSqlServer(
-                configuration.GetConnectionString("DefaultConnection")
-            ));
+        services.AddDbContextPool<RouteContext>(
+            (sp, options) => options.UseSqlServer(
+                configuration.GetConnectionString("DefaultConnection"),
+                sql => sql.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)),
+            poolSize: 64);
 
         services.AddScoped<IRouteRepository, RouteRepositoryImpl>();
         services.AddScoped<IStopRepository, StopRepositoryImpl>();
