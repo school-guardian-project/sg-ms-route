@@ -6,7 +6,7 @@ namespace ms_route.Api.Infrastructure.Persistence.Context;
 
 public class RouteContext : DbContext
 {
-    public RouteContext(DbContextOptions options) : base(options) { }
+    public RouteContext(DbContextOptions<RouteContext> options) : base(options) { }
 
     public DbSet<RouteEntity> Routes => Set<RouteEntity>();
     public DbSet<StopEntity> Stops => Set<StopEntity>();
@@ -45,6 +45,4 @@ public class RouteContext : DbContext
         modelBuilder.ApplyConfiguration(new RouteScheduleConfiguration());
         modelBuilder.ApplyConfiguration(new RouteExecutionConfiguration());
     }
-
-    protected RouteContext() { }
 }

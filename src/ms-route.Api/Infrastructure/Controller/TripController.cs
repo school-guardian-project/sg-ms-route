@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Ports.In;
 
@@ -22,6 +23,7 @@ public class TripController : ControllerBase
         _getCurrentTripUseCase = getCurrentTripUseCase;
     }
 
+    [EnableRateLimiting("writes")]
     [HttpPost("start")]
     public async Task<IActionResult> StartTrip([FromBody] StartTripRequest request, CancellationToken ct)
     {
@@ -29,6 +31,7 @@ public class TripController : ControllerBase
         return Ok(result);
     }
 
+    [EnableRateLimiting("writes")]
     [HttpPost("end")]
     public async Task<IActionResult> EndTrip(Guid tripId, CancellationToken ct)
     {
