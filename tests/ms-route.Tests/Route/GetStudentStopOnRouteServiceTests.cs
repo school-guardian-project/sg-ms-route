@@ -1,14 +1,15 @@
 using ms_route.Api.Application.UseCase;
 using ms_route.Api.Domain.Model;
 using ms_route.Tests.Fakes;
-using Xunit;
+using NUnit.Framework;
 using StopModel = ms_route.Api.Domain.Model.Stop;
 
 namespace ms_route.Tests.Route;
 
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class GetStudentStopOnRouteServiceTests
 {
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConEstudianteAsignado_RetornaLaParadaDeLaRuta()
     {
         var routeId = Guid.NewGuid();
@@ -41,15 +42,15 @@ public class GetStudentStopOnRouteServiceTests
 
         var result = await service.ExecuteAsync(routeId, studentId);
 
-        Assert.NotNull(result);
-        Assert.Equal(routeId, result.RouteId);
-        Assert.Equal(studentId, result.StudentProfileId);
-        Assert.Equal(routeStopId, result.RouteStopId);
-        Assert.Equal(stopId, result.StopId);
-        Assert.Equal("Libertad", result.StopName);
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.RouteId, Is.EqualTo(routeId));
+        Assert.That(result.StudentProfileId, Is.EqualTo(studentId));
+        Assert.That(result.RouteStopId, Is.EqualTo(routeStopId));
+        Assert.That(result.StopId, Is.EqualTo(stopId));
+        Assert.That(result.StopName, Is.EqualTo("Libertad"));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConEstudianteSinAsignacion_RetornaNull()
     {
         var service = new GetStudentStopOnRouteService(
@@ -59,10 +60,10 @@ public class GetStudentStopOnRouteServiceTests
 
         var result = await service.ExecuteAsync(Guid.NewGuid(), Guid.NewGuid());
 
-        Assert.Null(result);
+        Assert.That(result, Is.Null);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConAsignacionDeOtraRuta_RetornaNull()
     {
         var otherRouteStopId = Guid.NewGuid();
@@ -89,6 +90,6 @@ public class GetStudentStopOnRouteServiceTests
 
         var result = await service.ExecuteAsync(Guid.NewGuid(), assignmentRepo.Assignments[0].ProfileId);
 
-        Assert.Null(result);
+        Assert.That(result, Is.Null);
     }
 }

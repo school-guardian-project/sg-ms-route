@@ -2,13 +2,14 @@ using ms_route.Api.Application.UseCase;
 using ms_route.Api.Domain.Model;
 using ms_route.Tests.Fakes;
 using RouteModel = ms_route.Api.Domain.Model.Route;
-using Xunit;
+using NUnit.Framework;
 
 namespace ms_route.Tests.Route;
 
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class ListRouteServiceTests
 {
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConRutas_RetornaLista()
     {
         var repo = new InMemoryRouteRepository();
@@ -18,10 +19,10 @@ public class ListRouteServiceTests
 
         var result = await service.ExecuteAsync();
 
-        Assert.Equal(2, result.Count());
+        Assert.That(result.Count(), Is.EqualTo(2));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_SinRutas_RetornaListaVacia()
     {
         var repo = new InMemoryRouteRepository();
@@ -29,10 +30,10 @@ public class ListRouteServiceTests
 
         var result = await service.ExecuteAsync();
 
-        Assert.Empty(result);
+        Assert.That(result, Is.Empty);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConRutas_IncluyeDestinoYCantidadDeParadas()
     {
         var repo = new InMemoryRouteRepository();
@@ -50,8 +51,8 @@ public class ListRouteServiceTests
 
         var result = (await service.ExecuteAsync()).ToList();
 
-        Assert.Equal("Norte", result.Single(r => r.Id == routeNorte.Id).TargetSector);
-        Assert.Equal(2, result.Single(r => r.Id == routeNorte.Id).StopsCount);
-        Assert.Equal(0, result.Single(r => r.Id == routeSur.Id).StopsCount);
+        Assert.That(result.Single(r => r.Id == routeNorte.Id).TargetSector, Is.EqualTo("Norte"));
+        Assert.That(result.Single(r => r.Id == routeNorte.Id).StopsCount, Is.EqualTo(2));
+        Assert.That(result.Single(r => r.Id == routeSur.Id).StopsCount, Is.EqualTo(0));
     }
 }

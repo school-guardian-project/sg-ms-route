@@ -2,10 +2,11 @@ using ms_route.Api.Application.UseCase;
 using ms_route.Api.Domain.Model;
 using ms_route.Tests.Fakes;
 using RouteModel = ms_route.Api.Domain.Model.Route;
-using Xunit;
+using NUnit.Framework;
 
 namespace ms_route.Tests.Route;
 
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class ListRouteServiceTenantTests
 {
     private static readonly Guid CampusA = Guid.NewGuid();
@@ -28,7 +29,7 @@ public class ListRouteServiceTenantTests
             campusRepo ?? new InMemorySchoolCampusRepository(),
             tenant, TestMapper.Create());
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_AdminConSchoolId_SoloRutasDeLasSedesDelColegio()
     {
         var campusRepo = new InMemorySchoolCampusRepository();
@@ -38,11 +39,11 @@ public class ListRouteServiceTenantTests
 
         var result = (await service.ExecuteAsync()).ToList();
 
-        Assert.Single(result);
-        Assert.Equal("R-A", result[0].Name);
+        Assert.That(result, Has.Exactly(1).Items);
+        Assert.That(result[0].Name, Is.EqualTo("R-A"));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ParentConCampusId_SoloRutasDeSuSede()
     {
         var service = BuildService(BuildRepo(),
@@ -50,17 +51,17 @@ public class ListRouteServiceTenantTests
 
         var result = (await service.ExecuteAsync()).ToList();
 
-        Assert.Single(result);
-        Assert.Equal("R-B", result[0].Name);
+        Assert.That(result, Has.Exactly(1).Items);
+        Assert.That(result[0].Name, Is.EqualTo("R-B"));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_SinFiltro_RetornaTodas()
     {
         var service = BuildService(BuildRepo(), new FakeTenantProvider { ShouldFilter = false });
 
         var result = (await service.ExecuteAsync()).ToList();
 
-        Assert.Equal(2, result.Count);
+        Assert.That(result.Count, Is.EqualTo(2));
     }
 }

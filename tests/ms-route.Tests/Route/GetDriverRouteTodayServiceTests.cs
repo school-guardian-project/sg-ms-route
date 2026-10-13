@@ -2,12 +2,13 @@ using ms_route.Api.Application.Dto;
 using ms_route.Api.Application.UseCase;
 using ms_route.Api.Domain.Model;
 using ms_route.Tests.Fakes;
-using Xunit;
+using NUnit.Framework;
 using RouteModel = ms_route.Api.Domain.Model.Route;
 using StopModel = ms_route.Api.Domain.Model.Stop;
 
 namespace ms_route.Tests.Route;
 
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class GetDriverRouteTodayServiceTests
 {
     private static readonly DateOnly Monday = new(2026, 10, 5);
@@ -94,7 +95,7 @@ public class GetDriverRouteTodayServiceTests
     private static DateTimeOffset Local(DateOnly date, TimeOnly time)
         => new(date.ToDateTime(time), ColombiaOffset);
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_DentroDeLaVentana_RetornaActiveConParadas()
     {
         AddStopToRoute();
@@ -102,23 +103,23 @@ public class GetDriverRouteTodayServiceTests
 
         var result = await service.ExecuteAsync(Guid.NewGuid());
 
-        Assert.Equal(DriverRouteStatus.Active, result.Status);
-        Assert.NotNull(result.Route);
-        Assert.Single(result.Route.Stops);
-        Assert.Null(result.NextOccurrence);
+        Assert.That(result.Status, Is.EqualTo(DriverRouteStatus.Active));
+        Assert.That(result.Route, Is.Not.Null);
+        Assert.That(result.Route.Stops, Has.Exactly(1).Items);
+        Assert.That(result.NextOccurrence, Is.Null);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_QuinceMinutosAntesDeLaSalida_RetornaActive()
     {
         var service = CreateService(Local(Monday, new TimeOnly(5, 45)));
 
         var result = await service.ExecuteAsync(Guid.NewGuid());
 
-        Assert.Equal(DriverRouteStatus.Active, result.Status);
+        Assert.That(result.Status, Is.EqualTo(DriverRouteStatus.Active));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_AntesDeLaSalida_RetornaScheduledParaHoySinParadas()
     {
         AddStopToRoute();
@@ -126,13 +127,13 @@ public class GetDriverRouteTodayServiceTests
 
         var result = await service.ExecuteAsync(Guid.NewGuid());
 
-        Assert.Equal(DriverRouteStatus.Scheduled, result.Status);
-        Assert.NotNull(result.Route);
-        Assert.Empty(result.Route.Stops);
-        Assert.Equal(Local(Monday, RouteStart), result.NextOccurrence);
+        Assert.That(result.Status, Is.EqualTo(DriverRouteStatus.Scheduled));
+        Assert.That(result.Route, Is.Not.Null);
+        Assert.That(result.Route.Stops, Is.Empty);
+        Assert.That(result.NextOccurrence, Is.EqualTo(Local(Monday, RouteStart)));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_DiaAntes_RetornaScheduledParaManana()
     {
         var sunday = Monday.AddDays(-1);
@@ -140,23 +141,23 @@ public class GetDriverRouteTodayServiceTests
 
         var result = await service.ExecuteAsync(Guid.NewGuid());
 
-        Assert.Equal(DriverRouteStatus.Scheduled, result.Status);
-        Assert.Equal(Local(Monday, RouteStart), result.NextOccurrence);
+        Assert.That(result.Status, Is.EqualTo(DriverRouteStatus.Scheduled));
+        Assert.That(result.NextOccurrence, Is.EqualTo(Local(Monday, RouteStart)));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_DespuesDeLaVentana_RetornaScheduledParaLaProximaSalida()
     {
         var service = CreateService(Local(Monday, new TimeOnly(11, 0)));
 
         var result = await service.ExecuteAsync(Guid.NewGuid());
 
-        Assert.Equal(DriverRouteStatus.Scheduled, result.Status);
+        Assert.That(result.Status, Is.EqualTo(DriverRouteStatus.Scheduled));
         // Solo hay horario los lunes: la proxima salida es el lunes siguiente.
-        Assert.Equal(Local(Monday.AddDays(7), RouteStart), result.NextOccurrence);
+        Assert.That(result.NextOccurrence, Is.EqualTo(Local(Monday.AddDays(7), RouteStart)));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_FinDeSemana_RetornaScheduledParaElLunes()
     {
         var saturday = Monday.AddDays(-2);
@@ -164,11 +165,11 @@ public class GetDriverRouteTodayServiceTests
 
         var result = await service.ExecuteAsync(Guid.NewGuid());
 
-        Assert.Equal(DriverRouteStatus.Scheduled, result.Status);
-        Assert.Equal(Local(Monday, RouteStart), result.NextOccurrence);
+        Assert.That(result.Status, Is.EqualTo(DriverRouteStatus.Scheduled));
+        Assert.That(result.NextOccurrence, Is.EqualTo(Local(Monday, RouteStart)));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_SinBusAsignado_RetornaNoRoute()
     {
         _fleet.BusId = null;
@@ -176,12 +177,12 @@ public class GetDriverRouteTodayServiceTests
 
         var result = await service.ExecuteAsync(Guid.NewGuid());
 
-        Assert.Equal(DriverRouteStatus.NoRoute, result.Status);
-        Assert.Null(result.Route);
-        Assert.Null(result.NextOccurrence);
+        Assert.That(result.Status, Is.EqualTo(DriverRouteStatus.NoRoute));
+        Assert.That(result.Route, Is.Null);
+        Assert.That(result.NextOccurrence, Is.Null);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_SinAsignacionDeRuta_RetornaNoRoute()
     {
         _assignments.Assignments.Clear();
@@ -189,10 +190,10 @@ public class GetDriverRouteTodayServiceTests
 
         var result = await service.ExecuteAsync(Guid.NewGuid());
 
-        Assert.Equal(DriverRouteStatus.NoRoute, result.Status);
+        Assert.That(result.Status, Is.EqualTo(DriverRouteStatus.NoRoute));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_RutaInactiva_RetornaNoRoute()
     {
         _routes.Routes[0].Status = Status.Inactive;
@@ -200,10 +201,10 @@ public class GetDriverRouteTodayServiceTests
 
         var result = await service.ExecuteAsync(Guid.NewGuid());
 
-        Assert.Equal(DriverRouteStatus.NoRoute, result.Status);
+        Assert.That(result.Status, Is.EqualTo(DriverRouteStatus.NoRoute));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_SinHorarios_RetornaNoSchedule()
     {
         _schedules.Schedules.Clear();
@@ -211,23 +212,25 @@ public class GetDriverRouteTodayServiceTests
 
         var result = await service.ExecuteAsync(Guid.NewGuid());
 
-        Assert.Equal(DriverRouteStatus.NoSchedule, result.Status);
-        Assert.NotNull(result.Route);
-        Assert.Empty(result.Route.Stops);
-        Assert.Null(result.NextOccurrence);
+        Assert.That(result.Status, Is.EqualTo(DriverRouteStatus.NoSchedule));
+        Assert.That(result.Route, Is.Not.Null);
+        Assert.That(result.Route.Stops, Is.Empty);
+        Assert.That(result.NextOccurrence, Is.Null);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_DentroDeLaVentana_SiempreIncluyeElHorarioDeLaRuta()
     {
         var service = CreateService(Local(Monday, new TimeOnly(7, 0)));
 
         var result = await service.ExecuteAsync(Guid.NewGuid());
 
-        Assert.Equal(DriverRouteStatus.Active, result.Status);
-        Assert.NotNull(result.Route);
-        var schedule = Assert.Single(result.Route.Schedules);
-        Assert.Equal(Monday.DayOfWeek.ToString(), schedule.DayOfWeek);
-        Assert.Equal(RouteStart, schedule.StartTime);
+        Assert.That(result.Status, Is.EqualTo(DriverRouteStatus.Active));
+        Assert.That(result.Route, Is.Not.Null);
+        var scheduleItems = result.Route.Schedules;
+        Assert.That(scheduleItems, Has.Exactly(1).Items);
+        var schedule = scheduleItems.Single();
+        Assert.That(schedule.DayOfWeek, Is.EqualTo(Monday.DayOfWeek.ToString()));
+        Assert.That(schedule.StartTime, Is.EqualTo(RouteStart));
     }
 }

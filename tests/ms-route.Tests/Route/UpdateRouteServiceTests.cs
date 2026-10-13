@@ -3,13 +3,14 @@ using ms_route.Api.Application.UseCase;
 using ms_route.Api.Domain.Model;
 using ms_route.Tests.Fakes;
 using RouteModel = ms_route.Api.Domain.Model.Route;
-using Xunit;
+using NUnit.Framework;
 
 namespace ms_route.Tests.Route;
 
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class UpdateRouteServiceTests
 {
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConRutaExistente_ActualizaRuta()
     {
         var repo = new InMemoryRouteRepository();
@@ -25,16 +26,16 @@ public class UpdateRouteServiceTests
         });
 
         var updated = repo.Routes.First(r => r.Id == routeId);
-        Assert.Equal("R-01-Updated", updated.Name);
+        Assert.That(updated.Name, Is.EqualTo("R-01-Updated"));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConRutaInexistente_LanzaExcepcion()
     {
         var repo = new InMemoryRouteRepository();
         var service = new UpdateRouteService(repo, TestMapper.Create());
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.ExecuteAsync(Guid.NewGuid(), new RouteRequestDto
             {
                 CampuseId = Guid.NewGuid(),
