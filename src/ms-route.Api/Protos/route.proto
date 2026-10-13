@@ -15,6 +15,8 @@ service RouteService {
   rpc AssignStudentToRoute (AssignStudentToRouteRequest) returns (AssignStudentToRouteResponse);
   rpc AssignBusToRoute (AssignBusToRouteRequest) returns (AssignBusToRouteResponse);
   rpc AttachStopToRoute (AttachStopToRouteRequest) returns (AttachStopToRouteResponse);
+  rpc GetStudentStopOnRoute (GetStudentStopOnRouteRequest) returns (GetStudentStopOnRouteResponse);
+  rpc GetCurrentTrip (GetCurrentTripRequest) returns (GetCurrentTripResponse);
 }
 
 message CreateRouteRequest {
@@ -184,5 +186,31 @@ message AttachStopToRouteResponse {
   string route_id = 2;
   string stop_id = 3;
   int32 order_sequence = 4;
+  string status = 5;
+}
+
+message GetStudentStopOnRouteRequest {
+  string route_id = 1;
+  string student_profile_id = 2;
+}
+
+message GetStudentStopOnRouteResponse {
+  bool found = 1;
+  string route_id = 2;
+  string student_profile_id = 3;
+  string route_stop_id = 4;
+  string stop_id = 5;
+  string stop_name = 6;
+}
+
+message GetCurrentTripRequest {
+  string driver_id = 1;
+}
+
+message GetCurrentTripResponse {
+  bool found = 1;
+  string id = 2;
+  string bus_id = 3;
+  string driver_id = 4;
   string status = 5;
 }
