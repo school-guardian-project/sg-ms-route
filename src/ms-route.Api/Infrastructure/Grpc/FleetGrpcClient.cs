@@ -14,7 +14,6 @@ public sealed class FleetGrpcClient : IFleetService, IDisposable
     // Holgura amplia: la primera llamada tras un arranque en frio puede tardar
     // varios segundos en el servicio destino.
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(15);
-    private const string ApiKeyHeader = "x-internal-api-key";
 
     private readonly RouteService.RouteServiceClient _client;
     private readonly string _apiKey;
