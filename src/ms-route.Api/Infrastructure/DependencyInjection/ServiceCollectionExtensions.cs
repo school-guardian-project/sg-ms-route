@@ -8,6 +8,7 @@ using ms_route.Api.Domain.Ports.Out;
 using ms_route.Api.Infrastructure.Auth;
 using ms_route.Api.Infrastructure.Persistence.Context;
 using ms_route.Api.Infrastructure.Persistence.Mapper;
+using ms_route.Api.Infrastructure.Grpc;
 using ms_route.Api.Infrastructure.External;
 using ms_route.Api.Infrastructure.Repository;
 using RouteNameSearchStrategy = ms_route.Api.Application.Search.Route.NameSearchStrategy;
@@ -47,9 +48,12 @@ public static class ServiceCollectionExtensions
         services.AddHttpContextAccessor();
         services.AddScoped<ITenantProvider, JwtTenantProvider>();
 
+        // Los buses asignados a conductores los expone ms-fleet a través de gRPC.
+        services.AddScoped<IFleetService, FleetGrpcClient>();
+
         services.AddSingleton(TimeProvider.System);
-        services.AddHttpClient<IFleetService, FleetService>(client =>
-            client.BaseAddress = new Uri(configuration["Fleet:BaseUrl"] ?? "http://ms-fleet:8080"));
+        // Los buses asignados a conductores los expone ms-fleet a través de gRPC.
+        services.AddScoped<IFleetService, FleetGrpcClient>();
 
         services.AddScoped<ICreateRouteUseCase, CreateRouteService>();
         services.AddScoped<IGetRouteUseCase, GetRouteService>();
