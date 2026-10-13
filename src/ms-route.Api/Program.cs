@@ -104,6 +104,6 @@ app.Use(async (context, next) =>
 app.UseAuthentication();
 app.UseRateLimiter();
 app.MapControllers();
-app.MapGrpcService<RouteGrpcService>();
+/* app.MapGrpcService<RouteGrpcService>(); */
 
 app.Run();
