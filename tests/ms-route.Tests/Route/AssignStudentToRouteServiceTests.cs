@@ -1,13 +1,14 @@
 using ms_route.Api.Application.UseCase;
 using ms_route.Api.Domain.Model;
 using ms_route.Tests.Fakes;
-using Xunit;
+using NUnit.Framework;
 
 namespace ms_route.Tests.Route;
 
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class AssignStudentToRouteServiceTests
 {
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConParadaDeLaRuta_GuardaElIdDeLaRouteStop()
     {
         var routeId = Guid.NewGuid();
@@ -29,14 +30,14 @@ public class AssignStudentToRouteServiceTests
 
         var result = await service.ExecuteAsync(routeId, studentId, stopId);
 
-        Assert.Equal(routeStopId, assignmentRepo.Assignments.Single().RouteStopId);
-        Assert.Equal(routeId, result.RouteId);
-        Assert.Equal(studentId, result.StudentId);
-        Assert.Equal(stopId, result.StopId);
-        Assert.Equal("Active", result.Status);
+        Assert.That(assignmentRepo.Assignments.Single().RouteStopId, Is.EqualTo(routeStopId));
+        Assert.That(result.RouteId, Is.EqualTo(routeId));
+        Assert.That(result.StudentId, Is.EqualTo(studentId));
+        Assert.That(result.StopId, Is.EqualTo(stopId));
+        Assert.That(result.Status, Is.EqualTo("Active"));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConParadaQueNoPerteneceALaRuta_LanzaExcepcion()
     {
         var assignmentRepo = new InMemoryRouteStudentAssignmentRepository();
@@ -51,13 +52,13 @@ public class AssignStudentToRouteServiceTests
 
         var service = new AssignStudentToRouteService(assignmentRepo, routeStopRepo);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.ExecuteAsync(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()));
 
-        Assert.Empty(assignmentRepo.Assignments);
+        Assert.That(assignmentRepo.Assignments, Is.Empty);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConAsignacionPrevia_MueveLaParada()
     {
         var routeId = Guid.NewGuid();
@@ -90,7 +91,9 @@ public class AssignStudentToRouteServiceTests
         await service.ExecuteAsync(routeId, studentId, firstStop.StopId);
         await service.ExecuteAsync(routeId, studentId, secondStop.StopId);
 
-        var assignment = Assert.Single(assignmentRepo.Assignments);
-        Assert.Equal(secondStop.Id, assignment.RouteStopId);
+        var assignmentItems = assignmentRepo.Assignments;
+        Assert.That(assignmentItems, Has.Exactly(1).Items);
+        var assignment = assignmentItems.Single();
+        Assert.That(assignment.RouteStopId, Is.EqualTo(secondStop.Id));
     }
 }

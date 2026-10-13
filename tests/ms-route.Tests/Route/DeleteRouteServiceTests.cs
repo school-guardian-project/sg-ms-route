@@ -2,13 +2,14 @@ using ms_route.Api.Application.UseCase;
 using ms_route.Api.Domain.Model;
 using ms_route.Tests.Fakes;
 using RouteModel = ms_route.Api.Domain.Model.Route;
-using Xunit;
+using NUnit.Framework;
 
 namespace ms_route.Tests.Route;
 
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class DeleteRouteServiceTests
 {
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConRutaExistente_EliminaRuta()
     {
         var repo = new InMemoryRouteRepository();
@@ -18,16 +19,16 @@ public class DeleteRouteServiceTests
 
         await service.ExecuteAsync(routeId);
 
-        Assert.Empty(repo.Routes);
+        Assert.That(repo.Routes, Is.Empty);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConRutaInexistente_LanzaExcepcion()
     {
         var repo = new InMemoryRouteRepository();
         var service = new DeleteRouteService(repo);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.ExecuteAsync(Guid.NewGuid()));
     }
 }

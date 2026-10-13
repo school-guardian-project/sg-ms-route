@@ -1,14 +1,15 @@
 using ms_route.Api.Application.UseCase;
 using ms_route.Api.Domain.Model;
 using ms_route.Tests.Fakes;
-using Xunit;
+using NUnit.Framework;
 using RouteModel = ms_route.Api.Domain.Model.Route;
 
 namespace ms_route.Tests.Route;
 
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class GetCurrentRouteServiceTests
 {
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConEjecucionActiva_RetornaLaRutaDeLaEjecucion()
     {
         var driverId = Guid.NewGuid();
@@ -39,11 +40,11 @@ public class GetCurrentRouteServiceTests
 
         var result = await service.ExecuteAsync(driverId);
 
-        Assert.Equal(executionRouteId, result.Id);
-        Assert.Empty(result.Stops);
+        Assert.That(result.Id, Is.EqualTo(executionRouteId));
+        Assert.That(result.Stops, Is.Empty);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_SinEjecucionActiva_LanzaExcepcion()
     {
         var service = new GetCurrentRouteService(
@@ -53,6 +54,6 @@ public class GetCurrentRouteServiceTests
             new InMemoryStopRepository(),
             TestMapper.Create());
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => service.ExecuteAsync(Guid.NewGuid()));
+        Assert.ThrowsAsync<InvalidOperationException>(() => service.ExecuteAsync(Guid.NewGuid()));
     }
 }

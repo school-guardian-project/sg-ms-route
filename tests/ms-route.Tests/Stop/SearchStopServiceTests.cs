@@ -2,10 +2,11 @@ using ms_route.Api.Application.Search.Stop;
 using ms_route.Api.Application.UseCase;
 using ms_route.Tests.Fakes;
 using StopModel = ms_route.Api.Domain.Model.Stop;
-using Xunit;
+using NUnit.Framework;
 
 namespace ms_route.Tests.Stop;
 
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class SearchStopServiceTests
 {
     private static SearchStopService CreateService(InMemoryStopRepository stopRepo)
@@ -18,7 +19,7 @@ public class SearchStopServiceTests
         return new SearchStopService(new ListStopService(stopRepo, new InMemoryRouteStopRepository(), new InMemoryRouteRepository(), TestMapper.Create()), strategies);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_TerminoVacio_RetornaListaVacia()
     {
         var repo = new InMemoryStopRepository();
@@ -27,10 +28,10 @@ public class SearchStopServiceTests
 
         var result = await service.ExecuteAsync("");
 
-        Assert.Empty(result);
+        Assert.That(result, Is.Empty);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_TerminoPorNombre_FiltraIgnorandoMayusculas()
     {
         var repo = new InMemoryStopRepository();
@@ -57,12 +58,14 @@ public class SearchStopServiceTests
 
         var result = (await service.ExecuteAsync("parada NORTE")).ToList();
 
-        var matched = Assert.Single(result);
-        Assert.Equal(norte.Id, matched.Id);
-        Assert.Equal("Av. Libertad 123", matched.Address);
+        var matchedItems = result;
+        Assert.That(matchedItems, Has.Exactly(1).Items);
+        var matched = matchedItems.Single();
+        Assert.That(matched.Id, Is.EqualTo(norte.Id));
+        Assert.That(matched.Address, Is.EqualTo("Av. Libertad 123"));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_TerminoPorDireccionOCoordenada_Filtra()
     {
         var repo = new InMemoryStopRepository();
@@ -79,9 +82,9 @@ public class SearchStopServiceTests
         var service = CreateService(repo);
 
         var porDireccion = (await service.ExecuteAsync("LIBERTAD")).ToList();
-        Assert.Equal(norte.Id, Assert.Single(porDireccion).Id);
+        Assert.That(porDireccion.Single().Id, Is.EqualTo(norte.Id));
 
         var porCoordenada = (await service.ExecuteAsync("-33.45")).ToList();
-        Assert.Equal(norte.Id, Assert.Single(porCoordenada).Id);
+        Assert.That(porCoordenada.Single().Id, Is.EqualTo(norte.Id));
     }
 }

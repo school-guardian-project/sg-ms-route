@@ -3,10 +3,11 @@ using ms_route.Api.Domain.Model;
 using ms_route.Tests.Fakes;
 using RouteModel = ms_route.Api.Domain.Model.Route;
 using StopModel = ms_route.Api.Domain.Model.Stop;
-using Xunit;
+using NUnit.Framework;
 
 namespace ms_route.Tests.Route;
 
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class GetRouteServiceTests
 {
     private static GetRouteService CreateService(InMemoryRouteRepository repo) =>
@@ -17,7 +18,7 @@ public class GetRouteServiceTests
             new InMemoryStopRepository(),
             TestMapper.Create());
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConRutaExistente_RetornaRuta()
     {
         var repo = new InMemoryRouteRepository();
@@ -27,21 +28,21 @@ public class GetRouteServiceTests
 
         var result = await service.ExecuteAsync(routeId);
 
-        Assert.Equal(routeId, result.Id);
-        Assert.Equal("R-01", result.Name);
+        Assert.That(result.Id, Is.EqualTo(routeId));
+        Assert.That(result.Name, Is.EqualTo("R-01"));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConRutaInexistente_LanzaExcepcion()
     {
         var repo = new InMemoryRouteRepository();
         var service = CreateService(repo);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.ExecuteAsync(Guid.NewGuid()));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConBusAsignadoYParadas_RetornaBusIdYStops()
     {
         var routeId = Guid.NewGuid();
@@ -84,14 +85,16 @@ public class GetRouteServiceTests
 
         var result = await service.ExecuteAsync(routeId);
 
-        Assert.Equal(busId, result.BusId);
-        var stop = Assert.Single(result.Stops);
-        Assert.Equal(stopId, stop.Id);
-        Assert.Equal("Parada 1", stop.Name);
-        Assert.Equal(1, stop.OrderSequence);
+        Assert.That(result.BusId, Is.EqualTo(busId));
+        var stopItems = result.Stops;
+        Assert.That(stopItems, Has.Exactly(1).Items);
+        var stop = stopItems.Single();
+        Assert.That(stop.Id, Is.EqualTo(stopId));
+        Assert.That(stop.Name, Is.EqualTo("Parada 1"));
+        Assert.That(stop.OrderSequence, Is.EqualTo(1));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_SinBusAsignado_RetornaBusIdNulo()
     {
         var repo = new InMemoryRouteRepository();
@@ -101,7 +104,7 @@ public class GetRouteServiceTests
 
         var result = await service.ExecuteAsync(routeId);
 
-        Assert.Null(result.BusId);
-        Assert.Empty(result.Stops);
+        Assert.That(result.BusId, Is.Null);
+        Assert.That(result.Stops, Is.Empty);
     }
 }
