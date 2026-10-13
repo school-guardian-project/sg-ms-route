@@ -9,7 +9,7 @@ using ms_route.Api.Infrastructure.Auth;
 using ms_route.Api.Infrastructure.Persistence.Context;
 using ms_route.Api.Infrastructure.Persistence.Mapper;
 using ms_route.Api.Infrastructure.Grpc;
-using ms_route.Api.Infrastructure.External;
+
 using ms_route.Api.Infrastructure.Repository;
 using RouteNameSearchStrategy = ms_route.Api.Application.Search.Route.NameSearchStrategy;
 using StopNameSearchStrategy = ms_route.Api.Application.Search.Stop.NameSearchStrategy;
@@ -49,11 +49,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITenantProvider, JwtTenantProvider>();
 
         // Los buses asignados a conductores los expone ms-fleet a través de gRPC.
-        services.AddScoped<IFleetService, FleetGrpcClient>();
 
         services.AddSingleton(TimeProvider.System);
         // Los buses asignados a conductores los expone ms-fleet a través de gRPC.
-        services.AddScoped<IFleetService, FleetGrpcClient>();
 
         services.AddScoped<ICreateRouteUseCase, CreateRouteService>();
         services.AddScoped<IGetRouteUseCase, GetRouteService>();
