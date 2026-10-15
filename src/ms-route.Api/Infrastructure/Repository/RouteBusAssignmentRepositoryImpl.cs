@@ -56,6 +56,19 @@ public class RouteBusAssignmentRepositoryImpl : IRouteBusAssignmentRepository
         return entity is null ? null : ToDomain(entity);
     }
 
+    public async Task<bool> UnassignAsync(Guid routeId, CancellationToken ct = default)
+    {
+        var entity = await _context.RouteBusAssignments
+            .FirstOrDefaultAsync(a => a.RouteId == routeId && a.Status == Status.Active, ct);
+
+        if (entity is null) return false;
+
+        entity.Status = Status.Inactive;
+        await _context.SaveChangesAsync(ct);
+
+        return true;
+    }
+
     private static RouteBusAssignment ToDomain(RouteBusAssignmentEntity entity) => new()
     {
         Id = entity.Id,

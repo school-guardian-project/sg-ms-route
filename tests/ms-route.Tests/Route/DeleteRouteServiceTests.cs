@@ -15,7 +15,7 @@ public class DeleteRouteServiceTests
         var repo = new InMemoryRouteRepository();
         var routeId = Guid.NewGuid();
         repo.Routes.Add(new RouteModel { Id = routeId, Name = "R-01", TargetSector = "Norte", Status = Status.Active });
-        var service = new DeleteRouteService(repo);
+        var service = new DeleteRouteService(repo, new InMemoryRouteExecutionRepository());
 
         await service.ExecuteAsync(routeId);
 
@@ -26,9 +26,59 @@ public class DeleteRouteServiceTests
     public async Task ExecuteAsync_ConRutaInexistente_LanzaExcepcion()
     {
         var repo = new InMemoryRouteRepository();
-        var service = new DeleteRouteService(repo);
+        var service = new DeleteRouteService(repo, new InMemoryRouteExecutionRepository());
 
         Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.ExecuteAsync(Guid.NewGuid()));
+    }
+
+    [Test]
+    public async Task ExecuteAsync_ConViajeActivo_RechazaYNoElimina()
+    {
+        var repo = new InMemoryRouteRepository();
+        var routeId = Guid.NewGuid();
+        repo.Routes.Add(new RouteModel { Id = routeId, Name = "R-01", TargetSector = "Norte", Status = Status.Active });
+
+        var executions = new InMemoryRouteExecutionRepository();
+        executions.Executions.Add(new RouteExecution
+        {
+            Id = Guid.NewGuid(),
+            RouteId = routeId,
+            BusId = Guid.NewGuid(),
+            DriverId = Guid.NewGuid(),
+            StartDateTime = DateTime.UtcNow,
+            Status = Status.Active
+        });
+
+        var service = new DeleteRouteService(repo, executions);
+
+        Assert.ThrowsAsync<InvalidOperationException>(() => service.ExecuteAsync(routeId));
+        Assert.That(repo.Routes, Has.Exactly(1).Items);
+    }
+
+    [Test]
+    public async Task ExecuteAsync_ConViajeFinalizado_EliminaRuta()
+    {
+        var repo = new InMemoryRouteRepository();
+        var routeId = Guid.NewGuid();
+        repo.Routes.Add(new RouteModel { Id = routeId, Name = "R-01", TargetSector = "Norte", Status = Status.Active });
+
+        var executions = new InMemoryRouteExecutionRepository();
+        executions.Executions.Add(new RouteExecution
+        {
+            Id = Guid.NewGuid(),
+            RouteId = routeId,
+            BusId = Guid.NewGuid(),
+            DriverId = Guid.NewGuid(),
+            StartDateTime = DateTime.UtcNow.AddHours(-1),
+            EndDateTime = DateTime.UtcNow,
+            Status = Status.Inactive
+        });
+
+        var service = new DeleteRouteService(repo, executions);
+
+        await service.ExecuteAsync(routeId);
+
+        Assert.That(repo.Routes, Is.Empty);
     }
 }

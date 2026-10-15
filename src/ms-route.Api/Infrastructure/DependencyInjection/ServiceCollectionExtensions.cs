@@ -83,6 +83,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGetStudentRouteUseCase, GetStudentRouteService>();
         services.AddScoped<IAssignStudentToRouteUseCase, AssignStudentToRouteService>();
         services.AddScoped<IAssignBusToRouteUseCase, AssignBusToRouteService>();
+        services.AddScoped<IUnassignBusFromRouteUseCase, UnassignBusFromRouteService>();
+        services.AddScoped<ICreateRouteScheduleUseCase, CreateRouteScheduleService>();
+        services.AddScoped<IListRouteSchedulesUseCase, ListRouteSchedulesService>();
 
         return services;
     }
