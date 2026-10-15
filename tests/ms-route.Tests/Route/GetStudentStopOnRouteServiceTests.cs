@@ -27,7 +27,14 @@ public class GetStudentStopOnRouteServiceTests
         });
 
         var stopRepo = new InMemoryStopRepository();
-        stopRepo.Stops.Add(new StopModel { Id = stopId, Name = "Libertad" });
+        stopRepo.Stops.Add(new StopModel
+        {
+            Id = stopId,
+            Name = "Libertad",
+            Address = "Calle 12 #34-56",
+            Latitude = 3.4516m,
+            Longitude = -76.5320m
+        });
 
         var assignmentRepo = new InMemoryRouteStudentAssignmentRepository();
         assignmentRepo.Assignments.Add(new RouteStudentAssignment
@@ -48,6 +55,12 @@ public class GetStudentStopOnRouteServiceTests
         Assert.That(result.RouteStopId, Is.EqualTo(routeStopId));
         Assert.That(result.StopId, Is.EqualTo(stopId));
         Assert.That(result.StopName, Is.EqualTo("Libertad"));
+        // La ubicacion de la parada viaja con el caso de uso para que la
+        // notificacion al guardian incluya donde subio o bajo el estudiante
+        // (FR-5.2, FR-5.3).
+        Assert.That(result.StopAddress, Is.EqualTo("Calle 12 #34-56"));
+        Assert.That(result.Latitude, Is.EqualTo(3.4516m));
+        Assert.That(result.Longitude, Is.EqualTo(-76.5320m));
     }
 
     [Test]

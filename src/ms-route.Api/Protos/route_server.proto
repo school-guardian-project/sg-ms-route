@@ -1,7 +1,10 @@
-// Contrato servidor v1 que expone ms-route por gRPC para ms-notification:
-// asignacion de estudiante a parada y viaje abierto de un conductor (flujo de escaneo QR).
-// El gemelo cliente (buses de ms-fleet) vive en route.proto con package route.v1;
-// ambos generan una clase RouteService, por eso usan namespaces C# distintos.
+// Contrato v1 del servicio de rutas (package route) que ms-route expone por
+// gRPC: asignacion de estudiante a parada y viaje abierto de un conductor para
+// el flujo de escaneo QR.
+//
+// ms-notification consume este contrato en su Protos/route.proto, copiado con
+// sync-protos.sh; ese script solo reescribe `option csharp_namespace`, asi que
+// este encabezado no debe referirse a archivos del repo de ms-route.
 syntax = "proto3";
 option csharp_namespace = "ms_route.Api.Infrastructure.Grpc.Server";
 package route;
@@ -205,6 +208,12 @@ message GetStudentStopOnRouteResponse {
   string route_stop_id = 4;
   string stop_id = 5;
   string stop_name = 6;
+  // Ubicacion de la parada asignada (FR-5.2, FR-5.3): direccion legible para el
+  // texto de la notificacion y coordenadas para ubicarla. Campos nuevos,
+  // compatibles hacia atras.
+  string stop_address = 7;
+  double latitude = 8;
+  double longitude = 9;
 }
 
 message GetCurrentTripRequest {
