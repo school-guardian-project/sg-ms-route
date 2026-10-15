@@ -29,7 +29,7 @@ public class GetDriverRouteTodayServiceTests
 
     public GetDriverRouteTodayServiceTests()
     {
-        _fleet.BusId = _busId;
+        _fleet.AssignedBus = new BusInfo { Id = _busId, Plate = "ABC123", Capacity = 40 };
 
         _routes.Routes.Add(new RouteModel
         {
@@ -172,7 +172,7 @@ public class GetDriverRouteTodayServiceTests
     [Test]
     public async Task ExecuteAsync_SinBusAsignado_RetornaNoRoute()
     {
-        _fleet.BusId = null;
+        _fleet.AssignedBus = null;
         var service = CreateService(Local(Monday, new TimeOnly(7, 0)));
 
         var result = await service.ExecuteAsync(Guid.NewGuid());
@@ -180,6 +180,21 @@ public class GetDriverRouteTodayServiceTests
         Assert.That(result.Status, Is.EqualTo(DriverRouteStatus.NoRoute));
         Assert.That(result.Route, Is.Null);
         Assert.That(result.NextOccurrence, Is.Null);
+    }
+
+    [Test]
+    public async Task ExecuteAsync_IncluyeElBusAsignadoAlConductor()
+    {
+        var service = CreateService(Local(Monday, new TimeOnly(7, 0)));
+
+        var result = await service.ExecuteAsync(Guid.NewGuid());
+
+        Assert.That(result.Status, Is.EqualTo(DriverRouteStatus.Active));
+        Assert.That(result.Route, Is.Not.Null);
+        Assert.That(result.Route.Bus, Is.Not.Null);
+        Assert.That(result.Route.Bus.Id, Is.EqualTo(_busId));
+        Assert.That(result.Route.Bus.Plate, Is.EqualTo("ABC123"));
+        Assert.That(result.Route.Bus.Capacity, Is.EqualTo(40));
     }
 
     [Test]

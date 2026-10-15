@@ -52,10 +52,10 @@ public class GetDriverRouteTodayService : IGetDriverRouteTodayUseCase
 
     public async Task<DriverRouteTodayDto> ExecuteAsync(Guid driverId, CancellationToken ct = default)
     {
-        var busId = await _fleetService.GetBusIdAssignedToDriverAsync(driverId, ct);
-        if (busId is null) return NoRoute();
+        var bus = await _fleetService.GetBusAssignedToDriverAsync(driverId, ct);
+        if (bus is null) return NoRoute();
 
-        var assignment = await _routeBusAssignmentRepository.GetActiveByBusIdAsync(busId.Value, ct);
+        var assignment = await _routeBusAssignmentRepository.GetActiveByBusIdAsync(bus.Id, ct);
         if (assignment is null) return NoRoute();
 
         var route = await _routeRepository.GetByIdAsync(assignment.RouteId, ct);
@@ -78,6 +78,16 @@ public class GetDriverRouteTodayService : IGetDriverRouteTodayUseCase
                 StartTime = s.StartTime
             })
             .ToList();
+
+        // FR-9.2: el conductor identifica su bus (placa) junto a la ruta.
+        detail.Bus = new RouteBusDto
+        {
+            Id = bus.Id,
+            Plate = bus.Plate,
+            Capacity = bus.Capacity,
+            DriverProfileId = bus.DriverProfileId,
+            DriverName = bus.DriverName
+        };
 
         if (activeSchedule is not null)
         {

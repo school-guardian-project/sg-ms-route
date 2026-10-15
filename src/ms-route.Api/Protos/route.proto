@@ -1,8 +1,10 @@
 syntax = "proto3";
 
-// Contract v1 for ms-route's interactions with ms-fleet (bus assigned to driver).
-// The HTTP counterpart (/api/buses/assigned/{profileId}) was removed:
-// inter-service traffic is gRPC only (ADR-005).
+// Contract v1 for ms-route's internal lookups in ms-fleet: the bus assigned to
+// a driver (driver route view, FR-9.2) and the bus details for a route (bus,
+// driver and scheduled times, FR-9.1). The HTTP counterpart
+// (/api/buses/assigned/{profileId}) is only kept for the gateway: inter-service
+// traffic is gRPC only (ADR-005).
 //
 // Authentication: metadata header "x-internal-api-key" (shared secret from env).
 package route.v1;
@@ -10,14 +12,30 @@ package route.v1;
 option csharp_namespace = "ms_route.Api.Infrastructure.Grpc";
 
 service RouteService {
-  // Returns the bus ID assigned to a driver profile, or null.
-  rpc GetBusIdAssignedToDriver (GetBusIdAssignedToDriverRequest) returns (GetBusIdAssignedToDriverResponse);
+  // Bus assigned to a driver profile, or NotFound when the driver has none.
+  rpc GetBusAssignedToDriver (GetBusAssignedToDriverRequest) returns (BusAssignedResponse);
+
+  // Bus details (plate, capacity and assigned driver), or NotFound when unknown.
+  rpc GetBusDetails (GetBusDetailsRequest) returns (BusDetailsResponse);
 }
 
-message GetBusIdAssignedToDriverRequest {
+message GetBusAssignedToDriverRequest {
   string profile_id = 1;
 }
 
-message GetBusIdAssignedToDriverResponse {
+message BusAssignedResponse {
   string bus_id = 1;
+  string plate = 2;
+}
+
+message GetBusDetailsRequest {
+  string bus_id = 1;
+}
+
+message BusDetailsResponse {
+  string bus_id = 1;
+  string plate = 2;
+  int32 capacity = 3;
+  string driver_profile_id = 4;
+  string driver_name = 5;
 }
