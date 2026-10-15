@@ -379,7 +379,10 @@ public class RouteGrpcService : RouteService.RouteServiceBase
             StudentProfileId = result.StudentProfileId.ToString(),
             RouteStopId = result.RouteStopId.ToString(),
             StopId = result.StopId.ToString(),
-            StopName = result.StopName
+            StopName = result.StopName,
+            StopAddress = result.StopAddress,
+            Latitude = (double)result.Latitude,
+            Longitude = (double)result.Longitude
         };
     }
 
