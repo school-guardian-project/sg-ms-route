@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using ms_route.Api.Infrastructure.Auth;
 using ms_route.Api.Infrastructure.DependencyInjection;
 using ms_route.Api.Infrastructure.Grpc;
+using ms_route.Api.Infrastructure.Grpc.Server;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -86,6 +87,6 @@ app.Use(async (context, next) =>
 app.UseAuthentication();
 app.UseRateLimiter();
 app.MapControllers();
-/* app.MapGrpcService<RouteGrpcService>(); */
+app.MapGrpcService<RouteGrpcService>();
 
 app.Run();

@@ -20,9 +20,9 @@
     <PackageReference Include="Scalar.AspNetCore" Version="2.17.10" />
   </ItemGroup>
   <ItemGroup>
-    <Protobuf Include="Protos\route.proto" GrpcServices="Server" />
-  </ItemGroup>
-  <ItemGroup>
+    <!-- Contrato cliente: buses y conductor resueltos en ms-fleet (package route.v1). -->
     <Protobuf Include="Protos\route.proto" GrpcServices="Client" />
+    <!-- Contrato servidor: lo que ms-notification consume durante el escaneo (package route). -->
+    <Protobuf Include="Protos\route_server.proto" GrpcServices="Server" />
   </ItemGroup>
 </Project>
