@@ -48,10 +48,12 @@ public static class ServiceCollectionExtensions
         services.AddHttpContextAccessor();
         services.AddScoped<ITenantProvider, JwtTenantProvider>();
 
-        // Los buses asignados a conductores los expone ms-fleet a través de gRPC.
+        // Los buses (placa/conductor) los expone ms-fleet a través de gRPC.
+        // Singleton porque cada cliente GrpcChannel abre conexiones que conviene
+        // reutilizar entre peticiones.
+        services.AddSingleton<IFleetService, FleetGrpcClient>();
 
         services.AddSingleton(TimeProvider.System);
-        // Los buses asignados a conductores los expone ms-fleet a través de gRPC.
 
         services.AddScoped<ICreateRouteUseCase, CreateRouteService>();
         services.AddScoped<IGetRouteUseCase, GetRouteService>();
