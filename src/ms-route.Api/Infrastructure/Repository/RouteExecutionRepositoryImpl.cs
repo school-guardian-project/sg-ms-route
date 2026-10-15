@@ -67,6 +67,13 @@ public class RouteExecutionRepositoryImpl : IRouteExecutionRepository
         return entity is null ? null : ToDomain(entity);
     }
 
+    public async Task<bool> HasActiveByRouteIdAsync(Guid routeId, CancellationToken ct = default)
+    {
+        return await _context.RouteExecutions
+            .AsNoTracking()
+            .AnyAsync(e => e.RouteId == routeId && e.Status == Status.Active, ct);
+    }
+
     private static RouteExecution ToDomain(RouteExecutionEntity entity) => new()
     {
         Id = entity.Id,
