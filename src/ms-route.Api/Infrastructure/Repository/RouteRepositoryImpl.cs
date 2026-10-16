@@ -26,11 +26,17 @@ public class RouteRepositoryImpl : IRouteRepository
         return entity is null ? null : ToDomain(entity);
     }
 
-    public async Task<IReadOnlyList<RouteModel>> GetAllAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<RouteModel>> GetAllAsync(IReadOnlyCollection<Guid>? campusIds = null, CancellationToken ct = default)
     {
-        var entities = await _context.Routes
-            .AsNoTracking()
-            .ToListAsync(ct);
+        var query = _context.Routes.AsNoTracking().Where(r => r.Status == Status.Active);
+
+        if (campusIds is not null)
+        {
+            var ids = campusIds.ToArray();
+            query = query.Where(r => ids.Contains(r.CampuseId));
+        }
+
+        var entities = await query.ToListAsync(ct);
 
         return entities.Select(ToDomain).ToList();
     }
@@ -38,7 +44,7 @@ public class RouteRepositoryImpl : IRouteRepository
     public async Task<bool> ExistsByNameAsync(string name, CancellationToken ct = default)
     {
         return await _context.Routes
-            .AnyAsync(r => r.Name == name, ct);
+            .AnyAsync(r => r.Name == name && r.Status == Status.Active, ct);
     }
 
     public async Task<RouteModel> SaveAsync(RouteModel route, CancellationToken ct = default)
@@ -86,7 +92,8 @@ public class RouteRepositoryImpl : IRouteRepository
         if (entity is null)
             throw new InvalidOperationException($"Route not found: {id}");
 
-        _context.Routes.Remove(entity);
+        // Borrado lógico: RouteStop, RouteExecution y asignaciones la referencian sin cascada.
+        entity.Status = Status.Inactive;
         await _context.SaveChangesAsync(ct);
     }
 

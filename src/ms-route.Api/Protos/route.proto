@@ -1,188 +1,41 @@
 syntax = "proto3";
+
+// Contract v1 for ms-route's internal lookups in ms-fleet: the bus assigned to
+// a driver (driver route view, FR-9.2) and the bus details for a route (bus,
+// driver and scheduled times, FR-9.1). The HTTP counterpart
+// (/api/buses/assigned/{profileId}) is only kept for the gateway: inter-service
+// traffic is gRPC only (ADR-005).
+//
+// Authentication: metadata header "x-internal-api-key" (shared secret from env).
+package route.v1;
+
 option csharp_namespace = "ms_route.Api.Infrastructure.Grpc";
-package route;
 
 service RouteService {
-  rpc CreateRoute (CreateRouteRequest) returns (CreateRouteResponse);
-  rpc GetRoute (GetRouteRequest) returns (GetRouteResponse);
-  rpc ListRoutes (ListRoutesRequest) returns (ListRoutesResponse);
-  rpc UpdateRoute (UpdateRouteRequest) returns (UpdateRouteResponse);
-  rpc DeleteRoute (DeleteRouteRequest) returns (DeleteRouteResponse);
-  rpc GetCurrentRoute (GetCurrentRouteRequest) returns (GetCurrentRouteResponse);
-  rpc GetStudentRoute (GetStudentRouteRequest) returns (GetStudentRouteResponse);
-  rpc StartTrip (StartTripRequest) returns (StartTripResponse);
-  rpc EndTrip (EndTripRequest) returns (EndTripResponse);
-  rpc AssignStudentToRoute (AssignStudentToRouteRequest) returns (AssignStudentToRouteResponse);
-  rpc AssignBusToRoute (AssignBusToRouteRequest) returns (AssignBusToRouteResponse);
-  rpc AttachStopToRoute (AttachStopToRouteRequest) returns (AttachStopToRouteResponse);
+  // Bus assigned to a driver profile, or NotFound when the driver has none.
+  rpc GetBusAssignedToDriver (GetBusAssignedToDriverRequest) returns (BusAssignedResponse);
+
+  // Bus details (plate, capacity and assigned driver), or NotFound when unknown.
+  rpc GetBusDetails (GetBusDetailsRequest) returns (BusDetailsResponse);
 }
 
-message CreateRouteRequest {
-  string campuse_id = 1;
-  string name = 2;
-  string target_sector = 3;
-  string start_time = 4;
-  string end_time = 5;
+message GetBusAssignedToDriverRequest {
+  string profile_id = 1;
 }
 
-message CreateRouteResponse {
-  string id = 1;
-  string name = 2;
-  string target_sector = 3;
-  string status = 4;
-  string start_time = 5;
-  string end_time = 6;
+message BusAssignedResponse {
+  string bus_id = 1;
+  string plate = 2;
 }
 
-message GetRouteRequest {
-  string id = 1;
+message GetBusDetailsRequest {
+  string bus_id = 1;
 }
 
-message GetRouteResponse {
-  string id = 1;
-  string name = 2;
-  string target_sector = 3;
-  string status = 4;
-  string campuse_id = 5;
-  string start_time = 6;
-  string end_time = 7;
-}
-
-message ListRoutesRequest {}
-
-message RouteListItem {
-  string id = 1;
-  string name = 2;
-}
-
-message ListRoutesResponse {
-  repeated RouteListItem routes = 1;
-}
-
-message UpdateRouteRequest {
-  string id = 1;
-  string campuse_id = 2;
-  string name = 3;
-  string target_sector = 4;
-  string start_time = 5;
-  string end_time = 6;
-}
-
-message UpdateRouteResponse {
-  string id = 1;
-  string name = 2;
-  string target_sector = 3;
-  string status = 4;
-  string start_time = 5;
-  string end_time = 6;
-}
-
-message DeleteRouteRequest {
-  string id = 1;
-}
-
-message DeleteRouteResponse {
-  bool success = 1;
-}
-
-message GetCurrentRouteRequest {
-  string driver_id = 1;
-}
-
-message GetCurrentRouteResponse {
-  string id = 1;
-  string name = 2;
-  string campuse_id = 3;
-  string target_sector = 4;
-  string status = 5;
-  string start_time = 6;
-  string end_time = 7;
-  repeated StopItem stops = 8;
-}
-
-message GetStudentRouteRequest {
-  string student_id = 1;
-}
-
-message GetStudentRouteResponse {
-  string id = 1;
-  string name = 2;
-  string campuse_id = 3;
-  string target_sector = 4;
-  string status = 5;
-  string start_time = 6;
-  string end_time = 7;
-  repeated StopItem stops = 8;
-}
-
-message StartTripRequest {
-  string route_id = 1;
-  string bus_id = 2;
-  string driver_id = 3;
-}
-
-message StartTripResponse {
-  string id = 1;
-  string bus_id = 2;
-  string driver_id = 3;
-  string status = 4;
-}
-
-message EndTripRequest {
-  string trip_id = 1;
-}
-
-message EndTripResponse {
-  string id = 1;
-  string bus_id = 2;
-  string driver_id = 3;
-  string status = 4;
-}
-
-message AssignStudentToRouteRequest {
-  string route_id = 1;
-  string student_id = 2;
-  string stop_id = 3;
-}
-
-message AssignStudentToRouteResponse {
-  string id = 1;
-  string route_id = 2;
-  string student_id = 3;
-  string stop_id = 4;
-  string status = 5;
-}
-
-message AssignBusToRouteRequest {
-  string route_id = 1;
-  string bus_id = 2;
-}
-
-message AssignBusToRouteResponse {
-  string id = 1;
-  string route_id = 2;
-  string bus_id = 3;
-  string status = 4;
-}
-
-message StopItem {
-  string id = 1;
-  string name = 2;
-  string address = 3;
-  double latitude = 4;
-  double longitude = 5;
-  int32 order_sequence = 6;
-}
-
-message AttachStopToRouteRequest {
-  string route_id = 1;
-  string stop_id = 2;
-}
-
-message AttachStopToRouteResponse {
-  string id = 1;
-  string route_id = 2;
-  string stop_id = 3;
-  int32 order_sequence = 4;
-  string status = 5;
+message BusDetailsResponse {
+  string bus_id = 1;
+  string plate = 2;
+  int32 capacity = 3;
+  string driver_profile_id = 4;
+  string driver_name = 5;
 }

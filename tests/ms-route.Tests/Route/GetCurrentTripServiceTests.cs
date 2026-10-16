@@ -1,13 +1,14 @@
 using ms_route.Api.Application.UseCase;
 using ms_route.Api.Domain.Model;
 using ms_route.Tests.Fakes;
-using Xunit;
+using NUnit.Framework;
 
 namespace ms_route.Tests.Route;
 
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class GetCurrentTripServiceTests
 {
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConViajeActivo_RetornaElViaje()
     {
         var driverId = Guid.NewGuid();
@@ -25,13 +26,13 @@ public class GetCurrentTripServiceTests
 
         var result = await service.ExecuteAsync(driverId);
 
-        Assert.NotNull(result);
-        Assert.Equal(driverId, result.DriverId);
-        Assert.Equal("Active", result.Status);
-        Assert.Null(result.EndDateTime);
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.DriverId, Is.EqualTo(driverId));
+        Assert.That(result.Status, Is.EqualTo("Active"));
+        Assert.That(result.EndDateTime, Is.Null);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_SinViajeActivo_RetornaNull()
     {
         var driverId = Guid.NewGuid();
@@ -50,10 +51,10 @@ public class GetCurrentTripServiceTests
 
         var result = await service.ExecuteAsync(driverId);
 
-        Assert.Null(result);
+        Assert.That(result, Is.Null);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConViajeDeOtroDriver_RetornaNull()
     {
         var executionRepo = new InMemoryRouteExecutionRepository();
@@ -70,6 +71,6 @@ public class GetCurrentTripServiceTests
 
         var result = await service.ExecuteAsync(Guid.NewGuid());
 
-        Assert.Null(result);
+        Assert.That(result, Is.Null);
     }
 }

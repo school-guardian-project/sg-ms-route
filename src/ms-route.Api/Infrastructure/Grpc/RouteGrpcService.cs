@@ -4,7 +4,7 @@ using ms_route.Api.Domain.Model;
 using ms_route.Api.Domain.Ports.In;
 using RouteStatus = ms_route.Api.Domain.Model.Status;
 
-namespace ms_route.Api.Infrastructure.Grpc;
+namespace ms_route.Api.Infrastructure.Grpc.Server;
 
 public class RouteGrpcService : RouteService.RouteServiceBase
 {
@@ -20,6 +20,8 @@ public class RouteGrpcService : RouteService.RouteServiceBase
     private readonly IAssignStudentToRouteUseCase _assignStudentUseCase;
     private readonly IAssignBusToRouteUseCase _assignBusUseCase;
     private readonly IAttachStopToRouteUseCase _attachStopUseCase;
+    private readonly IGetStudentStopOnRouteUseCase _getStudentStopOnRouteUseCase;
+    private readonly IGetCurrentTripUseCase _getCurrentTripUseCase;
 
     public RouteGrpcService(
         ICreateRouteUseCase createUseCase,
@@ -33,7 +35,9 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         IEndTripUseCase endTripUseCase,
         IAssignStudentToRouteUseCase assignStudentUseCase,
         IAssignBusToRouteUseCase assignBusUseCase,
-        IAttachStopToRouteUseCase attachStopUseCase)
+        IAttachStopToRouteUseCase attachStopUseCase,
+        IGetStudentStopOnRouteUseCase getStudentStopOnRouteUseCase,
+        IGetCurrentTripUseCase getCurrentTripUseCase)
     {
         _createUseCase = createUseCase;
         _getUseCase = getUseCase;
@@ -47,6 +51,8 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         _assignStudentUseCase = assignStudentUseCase;
         _assignBusUseCase = assignBusUseCase;
         _attachStopUseCase = attachStopUseCase;
+        _getStudentStopOnRouteUseCase = getStudentStopOnRouteUseCase;
+        _getCurrentTripUseCase = getCurrentTripUseCase;
     }
 
     public override async Task<CreateRouteResponse> CreateRoute(
@@ -352,6 +358,55 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         }
     }
 
+    public override async Task<GetStudentStopOnRouteResponse> GetStudentStopOnRoute(
+        GetStudentStopOnRouteRequest request, ServerCallContext context)
+    {
+        // ParseId lanza InvalidArgument si el UUID es invalido.
+        var result = await _getStudentStopOnRouteUseCase.ExecuteAsync(
+            ParseId(request.RouteId, "route_id"),
+            ParseId(request.StudentProfileId, "student_profile_id"),
+            context.CancellationToken);
+
+        if (result is null)
+        {
+            return new GetStudentStopOnRouteResponse { Found = false };
+        }
+
+        return new GetStudentStopOnRouteResponse
+        {
+            Found = true,
+            RouteId = result.RouteId.ToString(),
+            StudentProfileId = result.StudentProfileId.ToString(),
+            RouteStopId = result.RouteStopId.ToString(),
+            StopId = result.StopId.ToString(),
+            StopName = result.StopName,
+            StopAddress = result.StopAddress,
+            Latitude = (double)result.Latitude,
+            Longitude = (double)result.Longitude
+        };
+    }
+
+    public override async Task<GetCurrentTripResponse> GetCurrentTrip(
+        GetCurrentTripRequest request, ServerCallContext context)
+    {
+        var result = await _getCurrentTripUseCase.ExecuteAsync(
+            ParseId(request.DriverId, "driver_id"), context.CancellationToken);
+
+        if (result is null)
+        {
+            return new GetCurrentTripResponse { Found = false };
+        }
+
+        return new GetCurrentTripResponse
+        {
+            Found = true,
+            Id = result.Id.ToString(),
+            BusId = result.BusId.ToString(),
+            DriverId = result.DriverId.ToString(),
+            Status = result.Status
+        };
+    }
+    
     private static TimeOnly ParseTime(string value) =>
         TimeOnly.TryParse(value, out var time) ? time : TimeOnly.MinValue;
 

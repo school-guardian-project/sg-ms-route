@@ -3,10 +3,11 @@ using ms_route.Api.Application.UseCase;
 using ms_route.Api.Domain.Model;
 using ms_route.Tests.Fakes;
 using RouteModel = ms_route.Api.Domain.Model.Route;
-using Xunit;
+using NUnit.Framework;
 
 namespace ms_route.Tests.Route;
 
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class SearchRouteServiceTests
 {
     private static SearchRouteService CreateService(
@@ -20,11 +21,11 @@ public class SearchRouteServiceTests
         };
 
         return new SearchRouteService(
-            new ListRouteService(routeRepo, routeStopRepo, TestMapper.Create()),
+            new ListRouteService(routeRepo, routeStopRepo, new InMemorySchoolCampusRepository(), new FakeTenantProvider(), TestMapper.Create()),
             strategies);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_TerminoVacio_RetornaListaVacia()
     {
         var repo = new InMemoryRouteRepository();
@@ -33,10 +34,10 @@ public class SearchRouteServiceTests
 
         var result = await service.ExecuteAsync("   ");
 
-        Assert.Empty(result);
+        Assert.That(result, Is.Empty);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_TerminoHora_FiltraPorHorario()
     {
         var repo = new InMemoryRouteRepository();
@@ -66,14 +67,16 @@ public class SearchRouteServiceTests
 
         var result = (await service.ExecuteAsync("07:30")).ToList();
 
-        var matched = Assert.Single(result);
-        Assert.Equal(temprana.Id, matched.Id);
-        Assert.Equal(new TimeOnly(7, 30), matched.StartTime);
-        Assert.Equal(1, matched.StopsCount);
-        Assert.False(new ScheduleSearchStrategy().CanHandle("R-02"));
+        var matchedItems = result;
+        Assert.That(matchedItems, Has.Exactly(1).Items);
+        var matched = matchedItems.Single();
+        Assert.That(matched.Id, Is.EqualTo(temprana.Id));
+        Assert.That(matched.StartTime, Is.EqualTo(new TimeOnly(7, 30)));
+        Assert.That(matched.StopsCount, Is.EqualTo(1));
+        Assert.That(new ScheduleSearchStrategy().CanHandle("R-02"), Is.False);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_TerminoGenerico_FiltraPorNombreYSector()
     {
         var repo = new InMemoryRouteRepository();
@@ -85,9 +88,9 @@ public class SearchRouteServiceTests
         var service = CreateService(repo, new InMemoryRouteStopRepository());
 
         var porSector = (await service.ExecuteAsync("norte")).ToList();
-        Assert.Equal(routeNorte.Id, Assert.Single(porSector).Id);
+        Assert.That(porSector.Single().Id, Is.EqualTo(routeNorte.Id));
 
         var porNombre = (await service.ExecuteAsync("r-02")).ToList();
-        Assert.Equal(routeSur.Id, Assert.Single(porNombre).Id);
+        Assert.That(porNombre.Single().Id, Is.EqualTo(routeSur.Id));
     }
 }

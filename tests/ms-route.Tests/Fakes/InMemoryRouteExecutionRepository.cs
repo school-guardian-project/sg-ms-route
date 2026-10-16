@@ -13,6 +13,9 @@ public class InMemoryRouteExecutionRepository : IRouteExecutionRepository
     public Task<RouteExecution?> GetActiveByDriverAsync(Guid driverId, CancellationToken ct = default)
         => Task.FromResult(Executions.FirstOrDefault(e => e.DriverId == driverId && e.Status == Status.Active));
 
+    public Task<bool> HasActiveByRouteIdAsync(Guid routeId, CancellationToken ct = default)
+        => Task.FromResult(Executions.Any(e => e.RouteId == routeId && e.Status == Status.Active));
+
     public Task<RouteExecution> SaveAsync(RouteExecution execution, CancellationToken ct = default)
     {
         Executions.Add(execution);

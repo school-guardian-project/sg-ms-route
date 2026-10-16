@@ -3,13 +3,14 @@ using ms_route.Api.Application.UseCase;
 using ms_route.Api.Domain.Model;
 using ms_route.Tests.Fakes;
 using RouteModel = ms_route.Api.Domain.Model.Route;
-using Xunit;
+using NUnit.Framework;
 
 namespace ms_route.Tests.Route;
 
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class CreateRouteServiceTests
 {
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConRutaValida_CreaRuta()
     {
         var repo = new InMemoryRouteRepository();
@@ -22,18 +23,18 @@ public class CreateRouteServiceTests
             TargetSector = "Norte"
         });
 
-        Assert.Single(repo.Routes);
-        Assert.Equal("R-01", result.Name);
+        Assert.That(repo.Routes, Has.Exactly(1).Items);
+        Assert.That(result.Name, Is.EqualTo("R-01"));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ConNombreDuplicado_Rechaza()
     {
         var repo = new InMemoryRouteRepository();
         repo.Routes.Add(new RouteModel { Id = Guid.NewGuid(), Name = "R-01", TargetSector = "Norte", Status = Status.Active });
         var service = new CreateRouteService(repo, TestMapper.Create());
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.ExecuteAsync(new RouteRequestDto
             {
                 CampuseId = Guid.NewGuid(),
@@ -42,13 +43,13 @@ public class CreateRouteServiceTests
             }));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_SinNombre_Rechaza()
     {
         var repo = new InMemoryRouteRepository();
         var service = new CreateRouteService(repo, TestMapper.Create());
 
-        await Assert.ThrowsAsync<ArgumentException>(() =>
+        Assert.ThrowsAsync<ArgumentException>(() =>
             service.ExecuteAsync(new RouteRequestDto
             {
                 CampuseId = Guid.NewGuid(),

@@ -43,6 +43,7 @@ public class StopRepositoryImpl : IStopRepository
     {
         var entities = await _context.Stops
             .AsNoTracking()
+            .Where(s => s.Status == Status.Active)
             .ToListAsync(ct);
 
         return entities.Select(ToDomain).ToList();
@@ -95,7 +96,8 @@ public class StopRepositoryImpl : IStopRepository
         if (entity is null)
             throw new InvalidOperationException($"Stop not found: {id}");
 
-        _context.Stops.Remove(entity);
+        // Borrado lógico: RouteStop la referencia sin cascada.
+        entity.Status = Status.Inactive;
         await _context.SaveChangesAsync(ct);
     }
 

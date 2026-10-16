@@ -5,8 +5,11 @@ using ms_route.Api.Application.Search.Stop;
 using ms_route.Api.Application.UseCase;
 using ms_route.Api.Domain.Ports.In;
 using ms_route.Api.Domain.Ports.Out;
+using ms_route.Api.Infrastructure.Auth;
 using ms_route.Api.Infrastructure.Persistence.Context;
 using ms_route.Api.Infrastructure.Persistence.Mapper;
+using ms_route.Api.Infrastructure.Grpc;
+
 using ms_route.Api.Infrastructure.Repository;
 using RouteNameSearchStrategy = ms_route.Api.Application.Search.Route.NameSearchStrategy;
 using StopNameSearchStrategy = ms_route.Api.Application.Search.Stop.NameSearchStrategy;
@@ -26,10 +29,11 @@ public static class ServiceCollectionExtensions
             cfg.AddProfile<StopPersistenceProfile>();
         });
 
-        services.AddDbContext<RouteContext>(options =>
-            options.UseSqlServer(
-                configuration.GetConnectionString("DefaultConnection")
-            ));
+        services.AddDbContextPool<RouteContext>(
+            (sp, options) => options.UseSqlServer(
+                configuration.GetConnectionString("DefaultConnection"),
+                sql => sql.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)),
+            poolSize: 64);
 
         services.AddScoped<IRouteRepository, RouteRepositoryImpl>();
         services.AddScoped<IStopRepository, StopRepositoryImpl>();
@@ -37,7 +41,19 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRouteStudentAssignmentRepository, RouteStudentAssignmentRepositoryImpl>();
         services.AddScoped<IRouteStopRepository, RouteStopRepositoryImpl>();
         services.AddScoped<IRouteBusAssignmentRepository, RouteBusAssignmentRepositoryImpl>();
+        services.AddScoped<IRouteScheduleRepository, RouteScheduleRepositoryImpl>();
         services.AddScoped<ICityRepository, CityRepositoryImpl>();
+        services.AddScoped<ISchoolCampusRepository, SchoolCampusRepositoryImpl>();
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<ITenantProvider, JwtTenantProvider>();
+
+        // Los buses (placa/conductor) los expone ms-fleet a través de gRPC.
+        // Singleton porque cada cliente GrpcChannel abre conexiones que conviene
+        // reutilizar entre peticiones.
+        services.AddSingleton<IFleetService, FleetGrpcClient>();
+
+        services.AddSingleton(TimeProvider.System);
 
         services.AddScoped<ICreateRouteUseCase, CreateRouteService>();
         services.AddScoped<IGetRouteUseCase, GetRouteService>();
@@ -61,6 +77,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISearchStopUseCase, SearchStopService>();
 
         services.AddScoped<IGetCurrentRouteUseCase, GetCurrentRouteService>();
+        services.AddScoped<IGetDriverRouteTodayUseCase, GetDriverRouteTodayService>();
         services.AddScoped<IStartTripUseCase, StartTripService>();
         services.AddScoped<IEndTripUseCase, EndTripService>();
         services.AddScoped<IGetCurrentTripUseCase, GetCurrentTripService>();
@@ -68,6 +85,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGetStudentRouteUseCase, GetStudentRouteService>();
         services.AddScoped<IAssignStudentToRouteUseCase, AssignStudentToRouteService>();
         services.AddScoped<IAssignBusToRouteUseCase, AssignBusToRouteService>();
+        services.AddScoped<IUnassignBusFromRouteUseCase, UnassignBusFromRouteService>();
+        services.AddScoped<ICreateRouteScheduleUseCase, CreateRouteScheduleService>();
+        services.AddScoped<IListRouteSchedulesUseCase, ListRouteSchedulesService>();
 
         return services;
     }

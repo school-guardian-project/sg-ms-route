@@ -39,7 +39,10 @@ public class GetStudentStopOnRouteService : IGetStudentStopOnRouteUseCase
             StudentProfileId = studentProfileId,
             RouteStopId = routeStop.Id,
             StopId = routeStop.StopId,
-            StopName = stop?.Name ?? string.Empty
+            StopName = stop?.Name ?? string.Empty,
+            StopAddress = stop?.Address ?? string.Empty,
+            Latitude = stop?.Latitude ?? 0m,
+            Longitude = stop?.Longitude ?? 0m
         };
     }
 }
