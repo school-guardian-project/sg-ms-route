@@ -12,10 +12,12 @@ public class GetCurrentTripServiceTests
     public async Task ExecuteAsync_ConViajeActivo_RetornaElViaje()
     {
         var driverId = Guid.NewGuid();
+        var routeId = Guid.NewGuid();
         var executionRepo = new InMemoryRouteExecutionRepository();
         executionRepo.Executions.Add(new RouteExecution
         {
             Id = Guid.NewGuid(),
+            RouteId = routeId,
             BusId = Guid.NewGuid(),
             DriverId = driverId,
             StartDateTime = DateTime.UtcNow,
@@ -28,6 +30,7 @@ public class GetCurrentTripServiceTests
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.DriverId, Is.EqualTo(driverId));
+        Assert.That(result.RouteId, Is.EqualTo(routeId));
         Assert.That(result.Status, Is.EqualTo("Active"));
         Assert.That(result.EndDateTime, Is.Null);
     }
