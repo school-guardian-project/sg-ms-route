@@ -401,6 +401,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         {
             Found = true,
             Id = result.Id.ToString(),
+            RouteId = result.RouteId.ToString(),
             BusId = result.BusId.ToString(),
             DriverId = result.DriverId.ToString(),
             Status = result.Status
