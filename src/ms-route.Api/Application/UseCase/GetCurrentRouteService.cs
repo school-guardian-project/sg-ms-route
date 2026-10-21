@@ -1,4 +1,5 @@
 using AutoMapper;
+using ms_route.Api.Application.Configuration;
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Model;
 using ms_route.Api.Domain.Ports.In;
@@ -13,24 +14,28 @@ public class GetCurrentRouteService : IGetCurrentRouteUseCase
     private readonly IRouteStopRepository _routeStopRepository;
     private readonly IStopRepository _stopRepository;
     private readonly IMapper _mapper;
+    private readonly TimeProvider _timeProvider;
 
     public GetCurrentRouteService(
         IRouteRepository routeRepository,
         IRouteExecutionRepository executionRepository,
         IRouteStopRepository routeStopRepository,
         IStopRepository stopRepository,
-        IMapper mapper)
+        IMapper mapper,
+        TimeProvider timeProvider)
     {
         _routeRepository = routeRepository;
         _executionRepository = executionRepository;
         _routeStopRepository = routeStopRepository;
         _stopRepository = stopRepository;
         _mapper = mapper;
+        _timeProvider = timeProvider;
     }
 
     public async Task<RouteDetailDto> ExecuteAsync(Guid driverId, CancellationToken ct = default)
     {
-        var execution = await _executionRepository.GetActiveByDriverAsync(driverId, ct);
+        var execution = await _executionRepository.GetActiveByDriverAsync(
+            driverId, LocalClock.StartOfLocalDayUtc(_timeProvider), ct);
         var route = execution is null
             ? null
             : await _routeRepository.GetByIdAsync(execution.RouteId, ct);

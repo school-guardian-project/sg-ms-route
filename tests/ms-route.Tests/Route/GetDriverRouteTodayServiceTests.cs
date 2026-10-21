@@ -248,4 +248,46 @@ public class GetDriverRouteTodayServiceTests
         Assert.That(schedule.DayOfWeek, Is.EqualTo(Monday.DayOfWeek.ToString()));
         Assert.That(schedule.StartTime, Is.EqualTo(RouteStart));
     }
+
+    // Ruta sin hora de fin util (EndTime igual a StartTime, p.ej. 00:00:00):
+    // la ventana se cierra una hora despues de la salida en lugar de quedar
+    // activa para siempre.
+    [Test]
+    public async Task ExecuteAsync_RutaSinHoraDeFin_UsaDuracionDeRespaldo()
+    {
+        _routes.Routes[0].EndTime = TimeOnly.MinValue;
+        var service = CreateService(Local(Monday, new TimeOnly(6, 30)));
+
+        var result = await service.ExecuteAsync(Guid.NewGuid());
+
+        Assert.That(result.Status, Is.EqualTo(DriverRouteStatus.Active));
+    }
+
+    // La ventana de respaldo cierra a la hora de salida + 1 hora.
+    [Test]
+    public async Task ExecuteAsync_RutaSinHoraDeFin_TrasLaDuracionDeRespaldo_RetornaScheduled()
+    {
+        _routes.Routes[0].EndTime = TimeOnly.MinValue;
+        var service = CreateService(Local(Monday, new TimeOnly(8, 0)));
+
+        var result = await service.ExecuteAsync(Guid.NewGuid());
+
+        Assert.That(result.Status, Is.EqualTo(DriverRouteStatus.Scheduled));
+    }
+
+    // Sin salida resoluble (ambas horas en 00:00:00, dato sin configurar) no
+    // hay ventana activa: la ruta no debe reportarse como activa.
+    [Test]
+    public async Task ExecuteAsync_RutaSinHorarioConfigurado_RetornaScheduled()
+    {
+        _routes.Routes[0].StartTime = TimeOnly.MinValue;
+        _routes.Routes[0].EndTime = TimeOnly.MinValue;
+        _schedules.Schedules[0].StartTime = TimeOnly.MinValue;
+        var service = CreateService(Local(Monday, new TimeOnly(7, 0)));
+
+        var result = await service.ExecuteAsync(Guid.NewGuid());
+
+        Assert.That(result.Status, Is.EqualTo(DriverRouteStatus.Scheduled));
+        Assert.That(result.Route.Stops, Is.Empty);
+    }
 }

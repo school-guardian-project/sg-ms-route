@@ -9,6 +9,9 @@ namespace ms_route.Tests.Route;
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class GetCurrentRouteServiceTests
 {
+    // 2026-10-21 12:00 UTC = 07:00 en America/Bogota.
+    private static readonly DateTimeOffset Now = new(2026, 10, 21, 12, 0, 0, TimeSpan.Zero);
+
     [Test]
     public async Task ExecuteAsync_ConEjecucionActiva_RetornaLaRutaDeLaEjecucion()
     {
@@ -27,7 +30,7 @@ public class GetCurrentRouteServiceTests
             RouteId = executionRouteId,
             BusId = Guid.NewGuid(),
             DriverId = driverId,
-            StartDateTime = DateTime.UtcNow,
+            StartDateTime = Now.UtcDateTime,
             Status = Status.Active
         });
 
@@ -36,7 +39,8 @@ public class GetCurrentRouteServiceTests
             executionRepo,
             new InMemoryRouteStopRepository(),
             new InMemoryStopRepository(),
-            TestMapper.Create());
+            TestMapper.Create(),
+            new FixedTimeProvider(Now));
 
         var result = await service.ExecuteAsync(driverId);
 
@@ -52,7 +56,8 @@ public class GetCurrentRouteServiceTests
             new InMemoryRouteExecutionRepository(),
             new InMemoryRouteStopRepository(),
             new InMemoryStopRepository(),
-            TestMapper.Create());
+            TestMapper.Create(),
+            new FixedTimeProvider(Now));
 
         Assert.ThrowsAsync<InvalidOperationException>(() => service.ExecuteAsync(Guid.NewGuid()));
     }

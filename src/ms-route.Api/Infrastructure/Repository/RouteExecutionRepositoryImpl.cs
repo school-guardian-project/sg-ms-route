@@ -58,11 +58,18 @@ public class RouteExecutionRepositoryImpl : IRouteExecutionRepository
         await _context.SaveChangesAsync(ct);
     }
 
-    public async Task<RouteExecution?> GetActiveByDriverAsync(Guid driverId, CancellationToken ct = default)
+    public async Task<RouteExecution?> GetActiveByDriverAsync(
+        Guid driverId, DateTime startedFromUtc, CancellationToken ct = default)
     {
+        // El corte por fecha viene del caso de uso: un viaje que nunca se cerro
+        // no debe seguir reportandose como activo al dia siguiente.
         var entity = await _context.RouteExecutions
             .AsNoTracking()
-            .FirstOrDefaultAsync(e => e.DriverId == driverId && e.Status == Status.Active, ct);
+            .Where(e => e.DriverId == driverId
+                        && e.Status == Status.Active
+                        && e.StartDateTime >= startedFromUtc)
+            .OrderByDescending(e => e.StartDateTime)
+            .FirstOrDefaultAsync(ct);
 
         return entity is null ? null : ToDomain(entity);
     }
