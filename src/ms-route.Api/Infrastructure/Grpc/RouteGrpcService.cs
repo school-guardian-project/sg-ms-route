@@ -229,6 +229,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
                 EndTime = result.EndTime.ToString("HH:mm:ss")
             };
             response.Stops.AddRange(ToProtoStops(result.Stops));
+            response.Schedules.AddRange(ToProtoSchedules(result.Schedules));
             return response;
         }
         catch (InvalidOperationException ex)
@@ -432,6 +433,14 @@ public class RouteGrpcService : RouteService.RouteServiceBase
             Latitude = (double)s.Latitude,
             Longitude = (double)s.Longitude,
             OrderSequence = s.OrderSequence
+        });
+
+    private static IEnumerable<ScheduleItem> ToProtoSchedules(IEnumerable<ScheduleDetailDto> schedules) =>
+        schedules.Select(s => new ScheduleItem
+        {
+            DayOfWeek = s.DayOfWeek,
+            Direction = s.Direction,
+            StartTime = s.StartTime.ToString("HH:mm:ss")
         });
 
     private static Guid ParseId(string value, string field)
