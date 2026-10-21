@@ -408,8 +408,20 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         };
     }
     
-    private static TimeOnly ParseTime(string value) =>
-        TimeOnly.TryParse(value, out var time) ? time : TimeOnly.MinValue;
+    /// <summary>
+    /// Parsea una hora del reloj enviada por gRPC. Falla de forma explicita en
+    /// lugar de devolver <see cref="TimeOnly.MinValue"/>: ese fallback silencioso
+    /// guardaba 00:00:00 en Route.StartTime/EndTime, lo que desactivaba la
+    /// ventana de escaneo del QR al interpretarse como "sin jornada configurada".
+    /// </summary>
+    private static TimeOnly ParseTime(string value)
+    {
+        if (TimeOnly.TryParse(value, out var time)) return time;
+
+        throw new RpcException(new global::Grpc.Core.Status(
+            StatusCode.InvalidArgument,
+            $"Invalid time '{value}', expected HH:mm or HH:mm:ss"));
+    }
 
     private static IEnumerable<StopItem> ToProtoStops(IEnumerable<StopDetailDto> stops) =>
         stops.Select(s => new StopItem
