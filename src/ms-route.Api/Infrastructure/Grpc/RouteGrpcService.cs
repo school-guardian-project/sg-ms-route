@@ -411,6 +411,14 @@ public class RouteGrpcService : RouteService.RouteServiceBase
             Direction = result.Direction
         };
     }
+
+    public override async Task<GetRouteByExecutionIdResponse> GetRouteByExecutionId(
+        GetRouteByExecutionIdRequest request, ServerCallContext context)
+    {
+        // TODO: Implementar caso de uso IGetRouteByExecutionIdUseCase
+        // Por ahora retornamos NotFound para que el cliente maneje el caso
+        return new GetRouteByExecutionIdResponse { Found = false };
+    }
     
     /// <summary>
     /// Parsea una hora del reloj enviada por gRPC. Falla de forma explicita en
