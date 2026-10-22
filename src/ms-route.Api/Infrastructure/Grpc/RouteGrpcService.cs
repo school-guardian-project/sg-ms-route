@@ -254,7 +254,8 @@ public class RouteGrpcService : RouteService.RouteServiceBase
                 Id = result.Id.ToString(),
                 BusId = result.BusId.ToString(),
                 DriverId = result.DriverId.ToString(),
-                Status = result.Status
+                Status = result.Status,
+                Direction = result.Direction
             };
         }
         catch (InvalidOperationException ex)
@@ -275,7 +276,8 @@ public class RouteGrpcService : RouteService.RouteServiceBase
                 Id = result.Id.ToString(),
                 BusId = result.BusId.ToString(),
                 DriverId = result.DriverId.ToString(),
-                Status = result.Status
+                Status = result.Status,
+                Direction = result.Direction
             };
         }
         catch (InvalidOperationException ex)
@@ -405,7 +407,8 @@ public class RouteGrpcService : RouteService.RouteServiceBase
             RouteId = result.RouteId.ToString(),
             BusId = result.BusId.ToString(),
             DriverId = result.DriverId.ToString(),
-            Status = result.Status
+            Status = result.Status,
+            Direction = result.Direction
         };
     }
     

@@ -145,6 +145,7 @@ message StartTripResponse {
   string bus_id = 2;
   string driver_id = 3;
   string status = 4;
+  string direction = 5;
 }
 
 message EndTripRequest {
@@ -156,6 +157,7 @@ message EndTripResponse {
   string bus_id = 2;
   string driver_id = 3;
   string status = 4;
+  string direction = 5;
 }
 
 message AssignStudentToRouteRequest {
@@ -237,4 +239,5 @@ message GetCurrentTripResponse {
   string driver_id = 4;
   string status = 5;
   string route_id = 6;
+  string direction = 7;
 }
