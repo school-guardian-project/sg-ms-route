@@ -74,7 +74,7 @@ public class StartTripService : IStartTripUseCase
                 "Route has no active schedule for today; trip cannot start outside the schedule window");
         }
 
-        // 3) Crear el viaje
+        // 3) Crear el viaje con la dirección del horario activo (Ida/Vuelta)
         var execution = new RouteExecution
         {
             Id = Guid.NewGuid(),
@@ -82,7 +82,8 @@ public class StartTripService : IStartTripUseCase
             BusId = busId,
             DriverId = driverId,
             StartDateTime = DateTime.UtcNow,
-            Status = Status.Active
+            Status = Status.Active,
+            Direction = activeSchedule.Direction
         };
 
         var saved = await _executionRepository.SaveAsync(execution, ct);

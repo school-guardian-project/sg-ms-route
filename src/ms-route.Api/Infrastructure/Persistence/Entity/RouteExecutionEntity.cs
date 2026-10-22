@@ -11,4 +11,5 @@ public class RouteExecutionEntity
     public DateTime StartDateTime { get; set; }
     public DateTime? EndDateTime { get; set; }
     public Status Status { get; set; } = Status.Active;
+    public string Direction { get; set; } = string.Empty;
 }

@@ -9,4 +9,5 @@ public class TripResponseDto
     public DateTime StartDateTime { get; set; }
     public DateTime? EndDateTime { get; set; }
     public string Status { get; set; } = string.Empty;
+    public string Direction { get; set; } = string.Empty;
 }

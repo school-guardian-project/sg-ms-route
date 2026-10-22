@@ -35,7 +35,8 @@ public class RouteExecutionRepositoryImpl : IRouteExecutionRepository
             DriverId = execution.DriverId,
             StartDateTime = execution.StartDateTime,
             EndDateTime = execution.EndDateTime,
-            Status = execution.Status
+            Status = execution.Status,
+            Direction = execution.Direction
         };
 
         await _context.RouteExecutions.AddAsync(entity, ct);
@@ -54,6 +55,7 @@ public class RouteExecutionRepositoryImpl : IRouteExecutionRepository
 
         entity.EndDateTime = execution.EndDateTime;
         entity.Status = execution.Status;
+        entity.Direction = execution.Direction;
 
         await _context.SaveChangesAsync(ct);
     }
@@ -89,6 +91,7 @@ public class RouteExecutionRepositoryImpl : IRouteExecutionRepository
         DriverId = entity.DriverId,
         StartDateTime = entity.StartDateTime,
         EndDateTime = entity.EndDateTime,
-        Status = entity.Status
+        Status = entity.Status,
+        Direction = entity.Direction
     };
 }
