@@ -3,6 +3,7 @@ using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Model;
 using ms_route.Api.Domain.Ports.In;
 using RouteStatus = ms_route.Api.Domain.Model.Status;
+using static ms_route.Api.Infrastructure.Grpc.Server.RouteGrpcMapper;
 
 namespace ms_route.Api.Infrastructure.Grpc.Server;
 
@@ -60,24 +61,10 @@ public class RouteGrpcService : RouteService.RouteServiceBase
     {
         try
         {
-            var result = await _createUseCase.ExecuteAsync(new RouteRequestDto
-            {
-                CampuseId = ParseId(request.CampuseId, "campuse_id"),
-                Name = request.Name,
-                TargetSector = request.TargetSector,
-                StartTime = ParseTime(request.StartTime),
-                EndTime = ParseTime(request.EndTime)
-            }, context.CancellationToken);
+            var result = await _createUseCase.ExecuteAsync(
+                ToRouteRequestDto(request), context.CancellationToken);
 
-            return new CreateRouteResponse
-            {
-                Id = result.Id.ToString(),
-                Name = result.Name,
-                TargetSector = result.TargetSector,
-                Status = result.Status,
-                StartTime = result.StartTime.ToString("HH:mm:ss"),
-                EndTime = result.EndTime.ToString("HH:mm:ss")
-            };
+            return ToCreateRouteResponse(result);
         }
         catch (ArgumentException ex)
         {
@@ -133,14 +120,8 @@ public class RouteGrpcService : RouteService.RouteServiceBase
     {
         try
         {
-            await _updateUseCase.ExecuteAsync(ParseId(request.Id, "route_id"), new RouteRequestDto
-            {
-                CampuseId = ParseId(request.CampuseId, "campuse_id"),
-                Name = request.Name,
-                TargetSector = request.TargetSector,
-                StartTime = ParseTime(request.StartTime),
-                EndTime = ParseTime(request.EndTime)
-            }, context.CancellationToken);
+            await _updateUseCase.ExecuteAsync(
+                ParseId(request.Id, "route_id"), ToRouteRequestDto(request), context.CancellationToken);
 
             return new UpdateRouteResponse
             {
@@ -229,6 +210,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
                 EndTime = result.EndTime.ToString("HH:mm:ss")
             };
             response.Stops.AddRange(ToProtoStops(result.Stops));
+            response.Schedules.AddRange(ToProtoSchedules(result.Schedules));
             return response;
         }
         catch (InvalidOperationException ex)
@@ -253,7 +235,8 @@ public class RouteGrpcService : RouteService.RouteServiceBase
                 Id = result.Id.ToString(),
                 BusId = result.BusId.ToString(),
                 DriverId = result.DriverId.ToString(),
-                Status = result.Status
+                Status = result.Status,
+                Direction = result.Direction
             };
         }
         catch (InvalidOperationException ex)
@@ -274,7 +257,8 @@ public class RouteGrpcService : RouteService.RouteServiceBase
                 Id = result.Id.ToString(),
                 BusId = result.BusId.ToString(),
                 DriverId = result.DriverId.ToString(),
-                Status = result.Status
+                Status = result.Status,
+                Direction = result.Direction
             };
         }
         catch (InvalidOperationException ex)
@@ -404,29 +388,16 @@ public class RouteGrpcService : RouteService.RouteServiceBase
             RouteId = result.RouteId.ToString(),
             BusId = result.BusId.ToString(),
             DriverId = result.DriverId.ToString(),
-            Status = result.Status
+            Status = result.Status,
+            Direction = result.Direction
         };
     }
-    
-    private static TimeOnly ParseTime(string value) =>
-        TimeOnly.TryParse(value, out var time) ? time : TimeOnly.MinValue;
 
-    private static IEnumerable<StopItem> ToProtoStops(IEnumerable<StopDetailDto> stops) =>
-        stops.Select(s => new StopItem
-        {
-            Id = s.Id.ToString(),
-            Name = s.Name,
-            Address = s.Address,
-            Latitude = (double)s.Latitude,
-            Longitude = (double)s.Longitude,
-            OrderSequence = s.OrderSequence
-        });
-
-    private static Guid ParseId(string value, string field)
+    public override async Task<GetRouteByExecutionIdResponse> GetRouteByExecutionId(
+        GetRouteByExecutionIdRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(value, out var id))
-            throw new RpcException(new global::Grpc.Core.Status(
-                StatusCode.InvalidArgument, $"Invalid {field}, use UUID: {value}"));
-        return id;
+        // TODO: Implementar caso de uso IGetRouteByExecutionIdUseCase
+        // Por ahora retornamos NotFound para que el cliente maneje el caso
+        return new GetRouteByExecutionIdResponse { Found = false };
     }
 }

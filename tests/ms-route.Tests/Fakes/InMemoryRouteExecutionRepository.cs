@@ -10,8 +10,14 @@ public class InMemoryRouteExecutionRepository : IRouteExecutionRepository
     public Task<RouteExecution?> GetByIdAsync(Guid id, CancellationToken ct = default)
         => Task.FromResult(Executions.FirstOrDefault(e => e.Id == id));
 
-    public Task<RouteExecution?> GetActiveByDriverAsync(Guid driverId, CancellationToken ct = default)
-        => Task.FromResult(Executions.FirstOrDefault(e => e.DriverId == driverId && e.Status == Status.Active));
+    public Task<RouteExecution?> GetActiveByDriverAsync(
+        Guid driverId, DateTime startedFromUtc, CancellationToken ct = default)
+        => Task.FromResult(Executions
+            .Where(e => e.DriverId == driverId
+                        && e.Status == Status.Active
+                        && e.StartDateTime >= startedFromUtc)
+            .OrderByDescending(e => e.StartDateTime)
+            .FirstOrDefault());
 
     public Task<bool> HasActiveByRouteIdAsync(Guid routeId, CancellationToken ct = default)
         => Task.FromResult(Executions.Any(e => e.RouteId == routeId && e.Status == Status.Active));

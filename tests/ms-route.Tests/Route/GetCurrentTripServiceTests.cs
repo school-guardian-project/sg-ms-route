@@ -8,6 +8,9 @@ namespace ms_route.Tests.Route;
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class GetCurrentTripServiceTests
 {
+    // 2026-10-21 12:00 UTC = 07:00 en America/Bogota.
+    private static readonly DateTimeOffset Now = new(2026, 10, 21, 12, 0, 0, TimeSpan.Zero);
+
     [Test]
     public async Task ExecuteAsync_ConViajeActivo_RetornaElViaje()
     {
@@ -20,11 +23,11 @@ public class GetCurrentTripServiceTests
             RouteId = routeId,
             BusId = Guid.NewGuid(),
             DriverId = driverId,
-            StartDateTime = DateTime.UtcNow,
+            StartDateTime = Now.UtcDateTime,
             Status = Status.Active
         });
 
-        var service = new GetCurrentTripService(executionRepo, TestMapper.Create());
+        var service = new GetCurrentTripService(executionRepo, TestMapper.Create(), new FixedTimeProvider(Now));
 
         var result = await service.ExecuteAsync(driverId);
 
@@ -45,12 +48,12 @@ public class GetCurrentTripServiceTests
             Id = Guid.NewGuid(),
             BusId = Guid.NewGuid(),
             DriverId = driverId,
-            StartDateTime = DateTime.UtcNow.AddHours(-2),
-            EndDateTime = DateTime.UtcNow.AddHours(-1),
+            StartDateTime = Now.UtcDateTime.AddHours(-2),
+            EndDateTime = Now.UtcDateTime.AddHours(-1),
             Status = Status.Inactive
         });
 
-        var service = new GetCurrentTripService(executionRepo, TestMapper.Create());
+        var service = new GetCurrentTripService(executionRepo, TestMapper.Create(), new FixedTimeProvider(Now));
 
         var result = await service.ExecuteAsync(driverId);
 
@@ -66,13 +69,36 @@ public class GetCurrentTripServiceTests
             Id = Guid.NewGuid(),
             BusId = Guid.NewGuid(),
             DriverId = Guid.NewGuid(),
-            StartDateTime = DateTime.UtcNow,
+            StartDateTime = Now.UtcDateTime,
             Status = Status.Active
         });
 
-        var service = new GetCurrentTripService(executionRepo, TestMapper.Create());
+        var service = new GetCurrentTripService(executionRepo, TestMapper.Create(), new FixedTimeProvider(Now));
 
         var result = await service.ExecuteAsync(Guid.NewGuid());
+
+        Assert.That(result, Is.Null);
+    }
+
+    // Un viaje que nunca se cerro no debe seguir reportandose como vigente al
+    // dia siguiente: era el origen de los viajes activos "fantasma".
+    [Test]
+    public async Task ExecuteAsync_ConViajeActivoDeDiasAnteriores_RetornaNull()
+    {
+        var driverId = Guid.NewGuid();
+        var executionRepo = new InMemoryRouteExecutionRepository();
+        executionRepo.Executions.Add(new RouteExecution
+        {
+            Id = Guid.NewGuid(),
+            BusId = Guid.NewGuid(),
+            DriverId = driverId,
+            StartDateTime = Now.UtcDateTime.AddDays(-2),
+            Status = Status.Active
+        });
+
+        var service = new GetCurrentTripService(executionRepo, TestMapper.Create(), new FixedTimeProvider(Now));
+
+        var result = await service.ExecuteAsync(driverId);
 
         Assert.That(result, Is.Null);
     }

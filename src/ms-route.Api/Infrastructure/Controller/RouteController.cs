@@ -15,6 +15,7 @@ public class RouteController : ControllerBase
     private readonly ISearchRouteUseCase _searchUseCase;
     private readonly IUpdateRouteUseCase _updateUseCase;
     private readonly IDeleteRouteUseCase _deleteUseCase;
+    private readonly IGetRouteSuggestionUseCase _suggestionUseCase;
 
     public RouteController(
         ICreateRouteUseCase createUseCase,
@@ -22,7 +23,8 @@ public class RouteController : ControllerBase
         IListRouteUseCase listUseCase,
         ISearchRouteUseCase searchUseCase,
         IUpdateRouteUseCase updateUseCase,
-        IDeleteRouteUseCase deleteUseCase)
+        IDeleteRouteUseCase deleteUseCase,
+        IGetRouteSuggestionUseCase suggestionUseCase)
     {
         _createUseCase = createUseCase;
         _getUseCase = getUseCase;
@@ -30,6 +32,7 @@ public class RouteController : ControllerBase
         _searchUseCase = searchUseCase;
         _updateUseCase = updateUseCase;
         _deleteUseCase = deleteUseCase;
+        _suggestionUseCase = suggestionUseCase;
     }
 
     [EnableRateLimiting("writes")]
@@ -75,5 +78,12 @@ public class RouteController : ControllerBase
     {
         await _deleteUseCase.ExecuteAsync(id, ct);
         return NoContent();
+    }
+
+    [HttpGet("{id:guid}/suggestion")]
+    public async Task<IActionResult> GetRouteSuggestion(Guid id, CancellationToken ct)
+    {
+        var result = await _suggestionUseCase.ExecuteAsync(id, ct);
+        return Ok(result);
     }
 }

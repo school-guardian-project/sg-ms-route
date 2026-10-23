@@ -7,3 +7,4 @@
 **/README.md
 **/*.slnx
 **/docker-compose.yml
+**/Migrations

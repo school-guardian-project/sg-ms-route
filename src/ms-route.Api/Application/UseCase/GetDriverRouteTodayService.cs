@@ -1,4 +1,5 @@
 using AutoMapper;
+using ms_route.Api.Application.Configuration;
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Model;
 using ms_route.Api.Domain.Ports.In;
@@ -9,9 +10,6 @@ namespace ms_route.Api.Application.UseCase;
 
 public class GetDriverRouteTodayService : IGetDriverRouteTodayUseCase
 {
-    // Colombia no aplica horario de verano: el offset es fijo UTC-5.
-    private static readonly TimeSpan LocalOffset = TimeSpan.FromHours(-5);
-
     // El conductor puede ver la ruta desde 15 minutos antes de la hora programada.
     private static readonly TimeSpan EarlyGrace = TimeSpan.FromMinutes(15);
 
@@ -19,6 +17,7 @@ public class GetDriverRouteTodayService : IGetDriverRouteTodayUseCase
     // la ventana se cierra 1 hora despues de la salida para no dejar la ruta nunca activa.
     private static readonly TimeSpan FallbackDuration = TimeSpan.FromHours(1);
 
+    private const int MinutesPerDay = 24 * 60;
     private const int DaysAheadToScan = 7;
 
     private readonly IFleetService _fleetService;
@@ -63,10 +62,9 @@ public class GetDriverRouteTodayService : IGetDriverRouteTodayUseCase
 
         var schedules = await _scheduleRepository.GetActiveByAssignmentIdAsync(assignment.Id, ct);
 
-        var localNow = _timeProvider.GetUtcNow().ToOffset(LocalOffset);
-        var today = DateOnly.FromDateTime(localNow.DateTime);
+        var localNow = LocalClock.UtcNow(_timeProvider);
 
-        var activeSchedule = schedules.FirstOrDefault(s => IsWithinActiveWindow(localNow, today, s, route));
+        var activeSchedule = schedules.FirstOrDefault(s => IsWithinActiveWindow(localNow, s, route));
 
         var detail = _mapper.Map<RouteDetailDto>(route);
         detail.Schedules = schedules
@@ -119,20 +117,42 @@ public class GetDriverRouteTodayService : IGetDriverRouteTodayUseCase
         };
     }
 
+    /// <summary>
+    /// Decide si la ruta esta activa ahora para el conductor.
+    ///
+    /// La ventana corre de <c>salida - EarlyGrace</c> hasta la hora de fin de la
+    /// ruta. Se compara sobre minutos del dia con aritmetrica modular para que
+    /// funcione tambien una ruta cuya hora de fin es menor que la de salida
+    /// (recorrido que cruza la medianoche).
+    ///
+    /// Si la hora de fin no es util (EndTime igual a StartTime, p.ej. el
+    /// 00:00:00 que dejan los datos sin configurar) la ventana se cierra
+    /// FallbackDuration despues de la salida. Si tampoco hay salida resoluble
+    /// no hay ventana activa: sin horario la ruta no debe reportarse como activa.
+    /// </summary>
     private static bool IsWithinActiveWindow(
         DateTimeOffset localNow,
-        DateOnly today,
         RouteSchedule schedule,
         RouteModel route)
     {
         if (schedule.DayOfWeek != localNow.DayOfWeek) return false;
 
-        var start = ToLocal(today, schedule.StartTime) - EarlyGrace;
-        var end = route.EndTime > schedule.StartTime
-            ? ToLocal(today, route.EndTime)
-            : ToLocal(today, schedule.StartTime) + FallbackDuration;
+        var startMinutes = schedule.StartTime.Hour * 60 + schedule.StartTime.Minute;
+        var endMinutes = route.EndTime.Hour * 60 + route.EndTime.Minute;
 
-        return localNow >= start && localNow <= end;
+        // Fin inutil: solo existe salida programada. Se acota la ventana para no
+        // dejar la ruta activa de forma indefinida.
+        if (endMinutes <= startMinutes)
+            endMinutes = startMinutes + (int)FallbackDuration.TotalMinutes;
+
+        var opensAt = startMinutes - (int)EarlyGrace.TotalMinutes;
+        var closesAt = endMinutes;
+
+        var nowMinutes = localNow.Hour * 60 + localNow.Minute;
+        var elapsed = (nowMinutes - opensAt + MinutesPerDay) % MinutesPerDay;
+        var span = (closesAt - opensAt + MinutesPerDay) % MinutesPerDay;
+
+        return span > 0 && elapsed <= span;
     }
 
     private static DateTimeOffset? NextOccurrence(
@@ -149,7 +169,7 @@ public class GetDriverRouteTodayService : IGetDriverRouteTodayUseCase
             {
                 if (schedule.DayOfWeek != date.DayOfWeek) continue;
 
-                var occurrence = ToLocal(date, schedule.StartTime);
+                var occurrence = LocalClock.AtLocal(date, schedule.StartTime);
                 if (occurrence <= localNow) continue;
 
                 if (next is null || occurrence < next.Value) next = occurrence;
@@ -160,12 +180,6 @@ public class GetDriverRouteTodayService : IGetDriverRouteTodayUseCase
         }
 
         return next;
-    }
-
-    private static DateTimeOffset ToLocal(DateOnly date, TimeOnly time)
-    {
-        var local = date.ToDateTime(time);
-        return new DateTimeOffset(local, LocalOffset);
     }
 
     private static DriverRouteTodayDto NoRoute() => new()
