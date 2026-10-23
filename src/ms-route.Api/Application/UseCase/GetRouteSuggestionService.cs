@@ -2,7 +2,6 @@ using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Model;
 using ms_route.Api.Domain.Ports.In;
 using ms_route.Api.Domain.Ports.Out;
-using AutoMapper;
 
 namespace ms_route.Api.Application.UseCase;
 
@@ -12,20 +11,17 @@ public class GetRouteSuggestionUseCase : IGetRouteSuggestionUseCase
     private readonly IMapRoutingService _routingService;
     private readonly IRouteStopRepository _routeStopRepository;
     private readonly IStopRepository _stopRepository;
-    private readonly IMapper _mapper;
 
     public GetRouteSuggestionUseCase(
         IRouteRepository routeRepository,
         IMapRoutingService routingService,
         IRouteStopRepository routeStopRepository,
-        IStopRepository stopRepository,
-        IMapper mapper)
+        IStopRepository stopRepository)
     {
         _routeRepository = routeRepository;
         _routingService = routingService;
         _routeStopRepository = routeStopRepository;
         _stopRepository = stopRepository;
-        _mapper = mapper;
     }
 
     public async Task<RouteSuggestionDto> ExecuteAsync(Guid routeId, CancellationToken ct = default)

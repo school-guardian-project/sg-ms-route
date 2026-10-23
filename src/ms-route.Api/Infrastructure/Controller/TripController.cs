@@ -46,11 +46,4 @@ public class TripController : ControllerBase
 
         return result is null ? NotFound() : Ok(result);
     }
-
-    public class StartTripRequest
-    {
-        public Guid RouteId { get; set; }
-        public Guid BusId { get; set; }
-        public Guid DriverId { get; set; }
-    }
 }
