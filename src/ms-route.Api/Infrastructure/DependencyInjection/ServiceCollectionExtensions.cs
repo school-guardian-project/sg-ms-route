@@ -9,6 +9,7 @@ using ms_route.Api.Infrastructure.Auth;
 using ms_route.Api.Infrastructure.Persistence.Context;
 using ms_route.Api.Infrastructure.Persistence.Mapper;
 using ms_route.Api.Infrastructure.Grpc;
+using ms_route.Api.Infrastructure.Routing;
 
 using ms_route.Api.Infrastructure.Repository;
 using RouteNameSearchStrategy = ms_route.Api.Application.Search.Route.NameSearchStrategy;
@@ -78,6 +79,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IGetCurrentRouteUseCase, GetCurrentRouteService>();
         services.AddScoped<IGetDriverRouteTodayUseCase, GetDriverRouteTodayService>();
+        services.AddScoped<IGetRouteSuggestionUseCase, GetRouteSuggestionUseCase>();
         services.AddScoped<IStartTripUseCase, StartTripService>();
         services.AddScoped<IEndTripUseCase, EndTripService>();
         services.AddScoped<IGetCurrentTripUseCase, GetCurrentTripService>();
@@ -88,6 +90,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUnassignBusFromRouteUseCase, UnassignBusFromRouteService>();
         services.AddScoped<ICreateRouteScheduleUseCase, CreateRouteScheduleService>();
         services.AddScoped<IListRouteSchedulesUseCase, ListRouteSchedulesService>();
+
+        services.AddSingleton<IMapRoutingService, OsrmMapRoutingService>();
 
         return services;
     }
