@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Ports.In;
+using ms_route.Api.Infrastructure.Auth;
 
 namespace ms_route.Api.Infrastructure.Controller;
 
 [ApiController]
 [Route("api/routes")]
+[RequireProfile]
 public class RouteController : ControllerBase
 {
     private readonly ICreateRouteUseCase _createUseCase;
@@ -37,6 +39,7 @@ public class RouteController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpPost]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> Create([FromBody] RouteRequestDto request, CancellationToken ct)
     {
         var result = await _createUseCase.ExecuteAsync(request, ct);
@@ -66,6 +69,7 @@ public class RouteController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpPut("{id:guid}")]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> Update(Guid id, [FromBody] RouteRequestDto request, CancellationToken ct)
     {
         await _updateUseCase.ExecuteAsync(id, request, ct);
@@ -74,6 +78,7 @@ public class RouteController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpDelete("{id:guid}")]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         await _deleteUseCase.ExecuteAsync(id, ct);

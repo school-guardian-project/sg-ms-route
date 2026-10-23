@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Ports.In;
+using ms_route.Api.Infrastructure.Auth;
 
 namespace ms_route.Api.Infrastructure.Controller;
 
 [ApiController]
 [Route("api/routes")]
+[RequireProfile]
 public class RouteDetailController : ControllerBase
 {
     private readonly IGetCurrentRouteUseCase _getCurrentRouteUseCase;

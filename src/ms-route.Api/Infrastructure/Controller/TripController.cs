@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Ports.In;
+using ms_route.Api.Infrastructure.Auth;
 
 namespace ms_route.Api.Infrastructure.Controller;
 
 [ApiController]
 [Route("api/trips")]
+[RequireProfile]
 public class TripController : ControllerBase
 {
     private readonly IStartTripUseCase _startTripUseCase;
@@ -25,6 +27,7 @@ public class TripController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpPost("start")]
+    [RequireRole(RequireRoleAttribute.AdminRoleId, RequireRoleAttribute.DriverRoleId, RequireRoleAttribute.SuperAdminRoleId)]
     public async Task<IActionResult> StartTrip([FromBody] StartTripRequest request, CancellationToken ct)
     {
         var result = await _startTripUseCase.ExecuteAsync(request.RouteId, request.BusId, request.DriverId, ct);
@@ -33,6 +36,7 @@ public class TripController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpPost("end")]
+    [RequireRole(RequireRoleAttribute.AdminRoleId, RequireRoleAttribute.DriverRoleId, RequireRoleAttribute.SuperAdminRoleId)]
     public async Task<IActionResult> EndTrip(Guid tripId, CancellationToken ct)
     {
         var result = await _endTripUseCase.ExecuteAsync(tripId, ct);
@@ -40,6 +44,7 @@ public class TripController : ControllerBase
     }
 
     [HttpGet("current")]
+    [RequireRole(RequireRoleAttribute.AdminRoleId, RequireRoleAttribute.DriverRoleId, RequireRoleAttribute.SuperAdminRoleId)]
     public async Task<IActionResult> GetCurrentTrip(Guid driverId, CancellationToken ct)
     {
         var result = await _getCurrentTripUseCase.ExecuteAsync(driverId, ct);

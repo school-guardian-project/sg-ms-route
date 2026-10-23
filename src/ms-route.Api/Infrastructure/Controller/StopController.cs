@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Ports.In;
+using ms_route.Api.Infrastructure.Auth;
 
 namespace ms_route.Api.Infrastructure.Controller;
 
 [ApiController]
 [Route("api/stops")]
+[RequireProfile]
 public class StopController : ControllerBase
 {
     private readonly ICreateStopUseCase _createUseCase;
@@ -34,6 +36,7 @@ public class StopController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpPost]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> Create([FromBody] StopRequestDto request, CancellationToken ct)
     {
         var result = await _createUseCase.ExecuteAsync(request, ct);
@@ -63,6 +66,7 @@ public class StopController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpPut("{id:guid}")]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> Update(Guid id, [FromBody] StopRequestDto request, CancellationToken ct)
     {
         await _updateUseCase.ExecuteAsync(id, request, ct);
@@ -71,6 +75,7 @@ public class StopController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpDelete("{id:guid}")]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         await _deleteUseCase.ExecuteAsync(id, ct);

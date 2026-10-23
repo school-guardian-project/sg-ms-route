@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Ports.In;
+using ms_route.Api.Infrastructure.Auth;
 
 namespace ms_route.Api.Infrastructure.Controller;
 
 [ApiController]
 [Route("api/routes")]
+[RequireProfile]
 public class RouteAssignmentController : ControllerBase
 {
     private readonly IAssignStudentToRouteUseCase _assignStudentToRouteUseCase;
@@ -37,6 +39,7 @@ public class RouteAssignmentController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpPost("{routeId:guid}/stops")]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> AttachStop(
         Guid routeId,
         [FromBody] AttachStopRequest request,
@@ -49,6 +52,7 @@ public class RouteAssignmentController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpPost("{routeId:guid}/students")]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> AssignStudent(
         Guid routeId,
         [FromBody] AssignStudentRequest request,
@@ -68,6 +72,7 @@ public class RouteAssignmentController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpPut("{routeId:guid}/bus")]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> AssignBus(
         Guid routeId,
         [FromBody] AssignBusRequest request,
@@ -81,6 +86,7 @@ public class RouteAssignmentController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpDelete("{routeId:guid}/bus")]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> UnassignBus(Guid routeId, CancellationToken ct)
     {
         await _unassignBusFromRouteUseCase.ExecuteAsync(routeId, ct);
@@ -89,6 +95,7 @@ public class RouteAssignmentController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpPost("{routeId:guid}/schedules")]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> CreateSchedule(
         Guid routeId,
         [FromBody] RouteScheduleRequestDto request,
