@@ -3,6 +3,7 @@ using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Model;
 using ms_route.Api.Domain.Ports.In;
 using RouteStatus = ms_route.Api.Domain.Model.Status;
+using static ms_route.Api.Infrastructure.Grpc.Server.RouteGrpcMapper;
 
 namespace ms_route.Api.Infrastructure.Grpc.Server;
 
@@ -60,24 +61,10 @@ public class RouteGrpcService : RouteService.RouteServiceBase
     {
         try
         {
-            var result = await _createUseCase.ExecuteAsync(new RouteRequestDto
-            {
-                CampuseId = ParseId(request.CampuseId, "campuse_id"),
-                Name = request.Name,
-                TargetSector = request.TargetSector,
-                StartTime = ParseTime(request.StartTime),
-                EndTime = ParseTime(request.EndTime)
-            }, context.CancellationToken);
+            var result = await _createUseCase.ExecuteAsync(
+                ToRouteRequestDto(request), context.CancellationToken);
 
-            return new CreateRouteResponse
-            {
-                Id = result.Id.ToString(),
-                Name = result.Name,
-                TargetSector = result.TargetSector,
-                Status = result.Status,
-                StartTime = result.StartTime.ToString("HH:mm:ss"),
-                EndTime = result.EndTime.ToString("HH:mm:ss")
-            };
+            return ToCreateRouteResponse(result);
         }
         catch (ArgumentException ex)
         {
@@ -133,14 +120,8 @@ public class RouteGrpcService : RouteService.RouteServiceBase
     {
         try
         {
-            await _updateUseCase.ExecuteAsync(ParseId(request.Id, "route_id"), new RouteRequestDto
-            {
-                CampuseId = ParseId(request.CampuseId, "campuse_id"),
-                Name = request.Name,
-                TargetSector = request.TargetSector,
-                StartTime = ParseTime(request.StartTime),
-                EndTime = ParseTime(request.EndTime)
-            }, context.CancellationToken);
+            await _updateUseCase.ExecuteAsync(
+                ParseId(request.Id, "route_id"), ToRouteRequestDto(request), context.CancellationToken);
 
             return new UpdateRouteResponse
             {
@@ -418,47 +399,5 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         // TODO: Implementar caso de uso IGetRouteByExecutionIdUseCase
         // Por ahora retornamos NotFound para que el cliente maneje el caso
         return new GetRouteByExecutionIdResponse { Found = false };
-    }
-    
-    /// <summary>
-    /// Parsea una hora del reloj enviada por gRPC. Falla de forma explicita en
-    /// lugar de devolver <see cref="TimeOnly.MinValue"/>: ese fallback silencioso
-    /// guardaba 00:00:00 en Route.StartTime/EndTime, lo que desactivaba la
-    /// ventana de escaneo del QR al interpretarse como "sin jornada configurada".
-    /// </summary>
-    private static TimeOnly ParseTime(string value)
-    {
-        if (TimeOnly.TryParse(value, out var time)) return time;
-
-        throw new RpcException(new global::Grpc.Core.Status(
-            StatusCode.InvalidArgument,
-            $"Invalid time '{value}', expected HH:mm or HH:mm:ss"));
-    }
-
-    private static IEnumerable<StopItem> ToProtoStops(IEnumerable<StopDetailDto> stops) =>
-        stops.Select(s => new StopItem
-        {
-            Id = s.Id.ToString(),
-            Name = s.Name,
-            Address = s.Address,
-            Latitude = (double)s.Latitude,
-            Longitude = (double)s.Longitude,
-            OrderSequence = s.OrderSequence
-        });
-
-    private static IEnumerable<ScheduleItem> ToProtoSchedules(IEnumerable<ScheduleDetailDto> schedules) =>
-        schedules.Select(s => new ScheduleItem
-        {
-            DayOfWeek = s.DayOfWeek,
-            Direction = s.Direction,
-            StartTime = s.StartTime.ToString("HH:mm:ss")
-        });
-
-    private static Guid ParseId(string value, string field)
-    {
-        if (!Guid.TryParse(value, out var id))
-            throw new RpcException(new global::Grpc.Core.Status(
-                StatusCode.InvalidArgument, $"Invalid {field}, use UUID: {value}"));
-        return id;
     }
 }

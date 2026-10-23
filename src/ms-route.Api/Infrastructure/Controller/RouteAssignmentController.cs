@@ -115,20 +115,4 @@ public class RouteAssignmentController : ControllerBase
 
         return result is null ? NotFound() : Ok(result);
     }
-
-    public class AssignStudentRequest
-    {
-        public Guid StudentId { get; set; }
-        public Guid StopId { get; set; }
-    }
-
-    public class AttachStopRequest
-    {
-        public Guid StopId { get; set; }
-    }
-
-    public class AssignBusRequest
-    {
-        public Guid BusId { get; set; }
-    }
 }

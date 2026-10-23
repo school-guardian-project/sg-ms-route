@@ -18,14 +18,3 @@ public class RouteSuggestionDto
     /// <summary>Trazado por calles o null si no hay sugerencia disponible.</summary>
     public RouteSuggestionGeometryDto? Geometry { get; set; }
 }
-
-public class RouteSuggestionGeometryDto
-{
-    /// <summary>Puntos del trazado vial en orden de transito.</summary>
-    public List<GeoPointDto> Points { get; set; } = new();
-
-    public double DistanceMeters { get; set; }
-    public double DurationSeconds { get; set; }
-}
-
-public record GeoPointDto(double Latitude, double Longitude);
