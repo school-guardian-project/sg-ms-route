@@ -17,4 +17,11 @@ public class RouteSuggestionDto
 
     /// <summary>Trazado por calles o null si no hay sugerencia disponible.</summary>
     public RouteSuggestionGeometryDto? Geometry { get; set; }
+
+    /// <summary>
+    /// Propiedad de conveniencia para compatibilidad con mobile.
+    /// Devuelve los puntos del trazado como array plano (camelCase al serializar).
+    /// Mobile puede usar `suggestion.points` directamente sin acceder a `geometry.Points`.
+    /// </summary>
+    public List<GeoPointDto> Points => Geometry?.Points ?? new();
 }
