@@ -19,40 +19,47 @@ public class CreateRouteScheduleService : ICreateRouteScheduleUseCase
     };
 
     private const int DirectionMaxLength = 10;
+    private static readonly string[] Directions = { "Ida", "Vuelta" };
 
     private readonly IRouteScheduleRepository _scheduleRepository;
     private readonly IRouteBusAssignmentRepository _assignmentRepository;
+    private readonly IRouteRepository _routeRepository;
 
     public CreateRouteScheduleService(
         IRouteScheduleRepository scheduleRepository,
-        IRouteBusAssignmentRepository assignmentRepository)
+        IRouteBusAssignmentRepository assignmentRepository,
+        IRouteRepository routeRepository)
     {
         _scheduleRepository = scheduleRepository;
         _assignmentRepository = assignmentRepository;
+        _routeRepository = routeRepository;
     }
 
-    public async Task<ScheduleDetailDto> ExecuteAsync(
+    public async Task<List<ScheduleDetailDto>> ExecuteAsync(
         Guid routeId,
-        RouteScheduleRequestDto request,
+        RouteRequestDto request,
         CancellationToken ct = default)
     {
-        if (!Enum.TryParse<DayOfWeek>(request.DayOfWeek, ignoreCase: true, out var dayOfWeek)
-            || !AllowedDays.Contains(dayOfWeek))
-        {
-            throw new ArgumentException(
-                "DayOfWeek must be one of Monday, Tuesday, Wednesday, Thursday or Friday.",
-                nameof(request.DayOfWeek));
-        }
+        var route = await _routeRepository.GetByIdAsync(routeId, ct);
+        if (route is null)
+            throw new InvalidOperationException("Route not found");
 
-        var direction = request.Direction?.Trim() ?? string.Empty;
-        if (string.IsNullOrEmpty(direction))
-            throw new ArgumentException("Direction is required.", nameof(request.Direction));
+        var daysOfWeek = request.DaysOfWeek ?? new List<string>();
+        if (daysOfWeek.Count == 0)
+            throw new ArgumentException("At least one day of week is required.", nameof(request.DaysOfWeek));
 
-        if (direction.Length > DirectionMaxLength)
+        // Validate days
+        var parsedDays = new List<DayOfWeek>();
+        foreach (var dayStr in daysOfWeek)
         {
-            throw new ArgumentException(
-                $"Direction must be at most {DirectionMaxLength} characters.",
-                nameof(request.Direction));
+            if (!Enum.TryParse<DayOfWeek>(dayStr, ignoreCase: true, out var dayOfWeek)
+                || !AllowedDays.Contains(dayOfWeek))
+            {
+                throw new ArgumentException(
+                    "DayOfWeek must be one of Monday, Tuesday, Wednesday, Thursday or Friday.",
+                    nameof(request.DaysOfWeek));
+            }
+            parsedDays.Add(dayOfWeek);
         }
 
         // El horario cuelga de la asignacion bus-ruta: sin bus asignado no hay
@@ -61,27 +68,37 @@ public class CreateRouteScheduleService : ICreateRouteScheduleUseCase
         if (assignment is null)
             throw new InvalidOperationException("The route has no bus assigned");
 
-        if (await _scheduleRepository.ExistsActiveAsync(assignment.Id, dayOfWeek, direction, ct))
-            throw new InvalidOperationException("A schedule already exists for that day and direction");
+        var result = new List<ScheduleDetailDto>();
 
-        var schedule = new RouteSchedule
+        foreach (var dayOfWeek in parsedDays)
         {
-            Id = Guid.NewGuid(),
-            RouteBusAssignmentsId = assignment.Id,
-            DayOfWeek = dayOfWeek,
-            Direction = direction,
-            StartTime = request.StartTime,
-            Status = Status.Active
-        };
+            foreach (var direction in Directions)
+            {
+                if (await _scheduleRepository.ExistsActiveAsync(assignment.Id, dayOfWeek, direction, ct))
+                    throw new InvalidOperationException($"A schedule already exists for {dayOfWeek} {direction}");
 
-        var saved = await _scheduleRepository.SaveAsync(schedule, ct);
+                var schedule = new RouteSchedule
+                {
+                    Id = Guid.NewGuid(),
+                    RouteBusAssignmentsId = assignment.Id,
+                    DayOfWeek = dayOfWeek,
+                    Direction = direction,
+                    StartTime = route.StartTime,
+                    Status = Status.Active
+                };
 
-        return new ScheduleDetailDto
-        {
-            Id = saved.Id,
-            DayOfWeek = saved.DayOfWeek.ToString(),
-            Direction = saved.Direction,
-            StartTime = saved.StartTime
-        };
+                var saved = await _scheduleRepository.SaveAsync(schedule, ct);
+
+                result.Add(new ScheduleDetailDto
+                {
+                    Id = saved.Id,
+                    DayOfWeek = saved.DayOfWeek.ToString(),
+                    Direction = saved.Direction,
+                    StartTime = saved.StartTime
+                });
+            }
+        }
+
+        return result;
     }
 }

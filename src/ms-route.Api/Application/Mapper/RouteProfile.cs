@@ -20,7 +20,8 @@ public class RouteProfile : Profile
 
         CreateMap<RouteModel, RouteDetailDto>()
             .ForMember(dest => dest.CampuseId, opt => opt.MapFrom(src => src.CampuseId.ToString()))
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+            .ForMember(dest => dest.DaysOfWeek, opt => opt.MapFrom(src => src.DaysOfWeek));
 
         CreateMap<RouteExecution, TripResponseDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));

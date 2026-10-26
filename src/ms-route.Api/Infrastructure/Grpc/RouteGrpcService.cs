@@ -189,7 +189,11 @@ public class RouteGrpcService : RouteService.RouteServiceBase
     {
         try
         {
-            var result = await _getStudentRouteUseCase.ExecuteAsync(ParseId(request.StudentId, "student_id"), context.CancellationToken);
+            var result = await _getStudentRouteUseCase.ExecuteAsync(
+                ParseId(request.StudentId, "student_id"),
+                isParent: false,
+                studentProfileId: null,
+                context.CancellationToken);
 
             // Sin ruta asignada: NotFound, igual que en REST. Antes esto era una
             // excepcion y el RPC devolvia Unknown.

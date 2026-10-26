@@ -37,7 +37,11 @@ public class GetStudentRouteService : IGetStudentRouteUseCase
         _mapper = mapper;
     }
 
-    public async Task<RouteDetailDto?> ExecuteAsync(Guid studentId, CancellationToken ct = default)
+    public async Task<RouteDetailDto?> ExecuteAsync(
+        Guid studentId,
+        bool isParent = false,
+        Guid? studentProfileId = null,
+        CancellationToken ct = default)
     {
         var assignment = await _assignmentRepository.GetActiveByProfileIdAsync(studentId, ct);
         var routeStop = assignment is null
@@ -53,7 +57,7 @@ public class GetStudentRouteService : IGetStudentRouteUseCase
             return null;
 
         var detail = _mapper.Map<RouteDetailDto>(route);
-        await PopulateStopsAsync(detail, route.Id, ct);
+        await PopulateStopsAsync(detail, route.Id, isParent, studentProfileId, ct);
         await PopulateBusAndSchedulesAsync(detail, route.Id, ct);
 
         return detail;
@@ -93,23 +97,107 @@ public class GetStudentRouteService : IGetStudentRouteUseCase
         };
     }
 
-    private async Task PopulateStopsAsync(RouteDetailDto detail, Guid routeId, CancellationToken ct)
+    private async Task PopulateStopsAsync(
+        RouteDetailDto detail,
+        Guid routeId,
+        bool isParent,
+        Guid? studentProfileId,
+        CancellationToken ct)
     {
         var routeStops = await _routeStopRepository.GetByRouteIdAsync(routeId, ct);
         var stops = await _stopRepository.GetByIdsAsync(routeStops.Select(rs => rs.StopId), ct);
         var stopById = stops.ToDictionary(s => s.Id);
 
-        detail.Stops = routeStops
-            .Where(rs => rs.Status == Status.Active && stopById.ContainsKey(rs.StopId))
-            .Select(rs => new StopDetailDto
+        // Obtener la asignación del estudiante si se proporciona studentProfileId
+        RouteStudentAssignment? studentAssignment = null;
+        if (studentProfileId.HasValue)
+        {
+            studentAssignment = await _assignmentRepository.GetActiveByProfileIdAsync(studentProfileId.Value, ct);
+        }
+
+        // Si es padre y tiene studentProfileId, filtrar paradas
+        if (isParent && studentProfileId.HasValue && studentAssignment is not null)
+        {
+            // Parada "casa": donde RouteStudentAssignment.RouteStopId coincide
+            // Parada "colegio": la de mayor OrderSequence (última)
+            var homeRouteStop = routeStops.FirstOrDefault(rs => rs.Id == studentAssignment.RouteStopId);
+            var schoolRouteStop = routeStops
+                .Where(rs => rs.Status == Status.Active && stopById.ContainsKey(rs.StopId))
+                .OrderByDescending(rs => rs.OrderSequence)
+                .FirstOrDefault();
+
+            var filteredStops = new List<StopDetailDto>();
+
+            if (homeRouteStop is not null && stopById.ContainsKey(homeRouteStop.StopId))
             {
-                Id = rs.StopId,
-                Name = stopById[rs.StopId].Name,
-                Address = stopById[rs.StopId].Address,
-                Latitude = stopById[rs.StopId].Latitude,
-                Longitude = stopById[rs.StopId].Longitude,
-                OrderSequence = rs.OrderSequence
-            })
-            .ToList();
+                var stop = stopById[homeRouteStop.StopId];
+                filteredStops.Add(new StopDetailDto
+                {
+                    Id = homeRouteStop.StopId,
+                    Name = stop.Name,
+                    Address = stop.Address,
+                    Latitude = stop.Latitude,
+                    Longitude = stop.Longitude,
+                    OrderSequence = homeRouteStop.OrderSequence
+                });
+            }
+
+            if (schoolRouteStop is not null && schoolRouteStop.Id != homeRouteStop?.Id && stopById.ContainsKey(schoolRouteStop.StopId))
+            {
+                var stop = stopById[schoolRouteStop.StopId];
+                filteredStops.Add(new StopDetailDto
+                {
+                    Id = schoolRouteStop.StopId,
+                    Name = stop.Name,
+                    Address = stop.Address,
+                    Latitude = stop.Latitude,
+                    Longitude = stop.Longitude,
+                    OrderSequence = schoolRouteStop.OrderSequence
+                });
+            }
+
+            detail.Stops = filteredStops.OrderBy(s => s.OrderSequence).ToList();
+        }
+        else if (studentProfileId.HasValue && studentAssignment is not null)
+        {
+            // Solo filtrar la parada asignada al estudiante
+            var assignedRouteStop = routeStops.FirstOrDefault(rs => rs.Id == studentAssignment.RouteStopId);
+            if (assignedRouteStop is not null && stopById.ContainsKey(assignedRouteStop.StopId))
+            {
+                var stop = stopById[assignedRouteStop.StopId];
+                detail.Stops = new List<StopDetailDto>
+                {
+                    new StopDetailDto
+                    {
+                        Id = assignedRouteStop.StopId,
+                        Name = stop.Name,
+                        Address = stop.Address,
+                        Latitude = stop.Latitude,
+                        Longitude = stop.Longitude,
+                        OrderSequence = assignedRouteStop.OrderSequence
+                    }
+                };
+            }
+            else
+            {
+                detail.Stops = new List<StopDetailDto>();
+            }
+        }
+        else
+        {
+            // Comportamiento original: todas las paradas activas
+            detail.Stops = routeStops
+                .Where(rs => rs.Status == Status.Active && stopById.ContainsKey(rs.StopId))
+                .Select(rs => new StopDetailDto
+                {
+                    Id = rs.StopId,
+                    Name = stopById[rs.StopId].Name,
+                    Address = stopById[rs.StopId].Address,
+                    Latitude = stopById[rs.StopId].Latitude,
+                    Longitude = stopById[rs.StopId].Longitude,
+                    OrderSequence = rs.OrderSequence
+                })
+                .ToList();
+        }
     }
 }

@@ -9,6 +9,7 @@ public class RouteDetailDto
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
     public string Status { get; set; } = string.Empty;
+    public List<string> DaysOfWeek { get; set; } = new();
     public List<StopDetailDto> Stops { get; set; } = new();
     public List<ScheduleDetailDto> Schedules { get; set; } = new();
 

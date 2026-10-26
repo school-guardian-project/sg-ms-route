@@ -9,4 +9,5 @@ public class Route
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
     public Status Status { get; set; } = Status.Active;
+    public List<string> DaysOfWeek { get; set; } = new();
 }

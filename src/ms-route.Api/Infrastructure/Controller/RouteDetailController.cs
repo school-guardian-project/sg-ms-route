@@ -42,9 +42,13 @@ public class RouteDetailController : ControllerBase
     }
 
     [HttpGet("student/{studentId:guid}")]
-    public async Task<IActionResult> GetStudentRoute(Guid studentId, CancellationToken ct)
+    public async Task<IActionResult> GetStudentRoute(
+        Guid studentId,
+        [FromQuery] bool isParent = false,
+        [FromQuery] Guid? studentProfileId = null,
+        CancellationToken ct = default)
     {
-        var result = await _getStudentRouteUseCase.ExecuteAsync(studentId, ct);
+        var result = await _getStudentRouteUseCase.ExecuteAsync(studentId, isParent, studentProfileId, ct);
         return result is null ? NotFound() : Ok(result);
     }
 }
