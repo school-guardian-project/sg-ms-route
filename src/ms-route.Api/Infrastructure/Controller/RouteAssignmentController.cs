@@ -91,7 +91,7 @@ public class RouteAssignmentController : ControllerBase
     [HttpPost("{routeId:guid}/schedules")]
     public async Task<IActionResult> CreateSchedule(
         Guid routeId,
-        [FromBody] RouteScheduleRequestDto request,
+        [FromBody] RouteRequestDto request,
         CancellationToken ct)
     {
         var result = await _createRouteScheduleUseCase.ExecuteAsync(routeId, request, ct);
