@@ -85,6 +85,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGetCurrentTripUseCase, GetCurrentTripService>();
         services.AddScoped<IGetStudentStopOnRouteUseCase, GetStudentStopOnRouteService>();
         services.AddScoped<IGetStudentRouteUseCase, GetStudentRouteService>();
+        services.AddScoped<IRouteStopFilter, RouteStopFilter>();
+        services.AddScoped<IRouteDetailPopulator, RouteDetailPopulator>();
         services.AddScoped<IAssignStudentToRouteUseCase, AssignStudentToRouteService>();
         services.AddScoped<IAssignBusToRouteUseCase, AssignBusToRouteService>();
         services.AddScoped<IUnassignBusFromRouteUseCase, UnassignBusFromRouteService>();
