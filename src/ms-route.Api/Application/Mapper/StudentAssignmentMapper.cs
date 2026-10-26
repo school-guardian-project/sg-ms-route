@@ -9,16 +9,16 @@ namespace ms_route.Api.Application.Mapper;
 /// </summary>
 public interface IStudentAssignmentMapper
 {
-    StudentAssignmentResponse ToResponse(RouteStudentAssignment assignment);
+    StudentAssignmentResponse ToResponse(RouteStudentAssignment assignment, RouteStop routeStop);
 }
 
 public sealed class StudentAssignmentMapper : IStudentAssignmentMapper
 {
-    public StudentAssignmentResponse ToResponse(RouteStudentAssignment assignment)
+    public StudentAssignmentResponse ToResponse(RouteStudentAssignment assignment, RouteStop routeStop)
     {
         return new StudentAssignmentResponse(
             assignment.Id,
-            assignment.RouteId,
+            routeStop.RouteId,
             assignment.ProfileId,
             assignment.RouteStopId,
             assignment.Status.ToString());

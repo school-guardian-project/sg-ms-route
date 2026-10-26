@@ -23,7 +23,7 @@ public sealed class StudentRouteStopMapper : IStudentRouteStopMapper
         Stop stop)
     {
         return new StudentRouteStopResponse(
-            assignment.RouteId,
+            routeStop.RouteId,
             assignment.ProfileId,
             routeStop.Id,
             stop.Id,

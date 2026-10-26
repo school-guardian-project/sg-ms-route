@@ -18,7 +18,7 @@ public sealed class ScheduleMapper : IScheduleMapper
     {
         return new ScheduleDetailResponse(
             schedule.Id,
-            schedule.DayOfWeek,
+            schedule.DayOfWeek.ToString(),
             schedule.Direction,
             schedule.StartTime);
     }

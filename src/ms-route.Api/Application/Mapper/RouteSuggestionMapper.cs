@@ -40,6 +40,6 @@ public sealed class RouteSuggestionMapper : IRouteSuggestionMapper
 
     public GeoPointResponse ToGeoPointResponse(GeoPoint point)
     {
-        return new GeoPointResponse(point.Latitude, point.Longitude);
+        return new GeoPointResponse((double)point.Latitude, (double)point.Longitude);
     }
 }

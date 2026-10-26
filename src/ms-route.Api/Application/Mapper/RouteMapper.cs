@@ -1,5 +1,4 @@
 using ms_route.Api.Application.Dto.Response;
-using ms_route.Api.Domain.Model;
 using RouteModel = ms_route.Api.Domain.Model.Route;
 
 namespace ms_route.Api.Application.Mapper;
@@ -30,7 +29,7 @@ public sealed class RouteMapper : IRouteMapper
             route.TargetSector,
             route.StartTime,
             route.EndTime,
-            route.Stops?.Count ?? 0);
+            0); // StopsCount needs to be calculated externally
     }
 
     public RouteResponse ToResponse(RouteModel route, Guid? busId, List<StopDetailResponse> stops)
@@ -61,7 +60,7 @@ public sealed class RouteMapper : IRouteMapper
             route.StartTime,
             route.EndTime,
             route.Status.ToString(),
-            route.DaysOfWeek ?? new(),
+            route.DaysOfWeek,
             stops,
             schedules,
             bus);
