@@ -58,6 +58,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<ICreateRouteUseCase, CreateRouteService>();
         services.AddScoped<IGetRouteUseCase, GetRouteService>();
+        services.AddScoped<IGetRouteByExecutionIdUseCase, GetRouteByExecutionIdService>();
         services.AddScoped<IListRouteUseCase, ListRouteService>();
         services.AddScoped<IUpdateRouteUseCase, UpdateRouteService>();
         services.AddScoped<IDeleteRouteUseCase, DeleteRouteService>();

@@ -10,6 +10,12 @@ services:
       - "5001"
     env_file:
       - .env
+    environment:
+      Kestrel__Endpoints__Http__Url: "${Kestrel__Endpoints__Http__Url:-http://+:8080}"
+      Kestrel__Endpoints__Http__Protocols: Http1
+      Kestrel__Endpoints__Grpc__Url: "${Kestrel__Endpoints__Grpc__Url:-http://+:5001}"
+      Kestrel__Endpoints__Grpc__Protocols: Http2
+      Fleet__GrpcAddress: "${Fleet__GrpcAddress:-http://ms-fleet:5001}"
     networks:
       - sg-services-network
 
