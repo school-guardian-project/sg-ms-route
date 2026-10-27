@@ -13,6 +13,9 @@ public sealed class StartTripRequest
     [Required]
     public Guid BusId { get; init; }
 
-    [Required]
-    public Guid DriverId { get; init; }
+    /// <summary>
+    /// Optional: the driver always comes from the access token. Kept for
+    /// compatibility with clients that still send it; a different id is 403.
+    /// </summary>
+    public Guid? DriverId { get; init; }
 }
