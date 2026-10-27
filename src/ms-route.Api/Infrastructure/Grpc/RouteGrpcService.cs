@@ -11,6 +11,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
 {
     private readonly ICreateRouteUseCase _createUseCase;
     private readonly IGetRouteUseCase _getUseCase;
+    private readonly IGetRouteByExecutionIdUseCase _getRouteByExecutionIdUseCase;
     private readonly IListRouteUseCase _listUseCase;
     private readonly IUpdateRouteUseCase _updateUseCase;
     private readonly IDeleteRouteUseCase _deleteUseCase;
@@ -27,6 +28,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
     public RouteGrpcService(
         ICreateRouteUseCase createUseCase,
         IGetRouteUseCase getUseCase,
+        IGetRouteByExecutionIdUseCase getRouteByExecutionIdUseCase,
         IListRouteUseCase listUseCase,
         IUpdateRouteUseCase updateUseCase,
         IDeleteRouteUseCase deleteUseCase,
@@ -42,6 +44,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
     {
         _createUseCase = createUseCase;
         _getUseCase = getUseCase;
+        _getRouteByExecutionIdUseCase = getRouteByExecutionIdUseCase;
         _listUseCase = listUseCase;
         _updateUseCase = updateUseCase;
         _deleteUseCase = deleteUseCase;
@@ -396,8 +399,15 @@ public class RouteGrpcService : RouteService.RouteServiceBase
     public override async Task<GetRouteByExecutionIdResponse> GetRouteByExecutionId(
         GetRouteByExecutionIdRequest request, ServerCallContext context)
     {
-        // TODO: Implementar caso de uso IGetRouteByExecutionIdUseCase
-        // Por ahora retornamos NotFound para que el cliente maneje el caso
-        return new GetRouteByExecutionIdResponse { Found = false };
+        var route = await _getRouteByExecutionIdUseCase.ExecuteAsync(
+            ParseId(request.ExecutionId, "execution_id"), context.CancellationToken);
+        return route is null
+            ? new GetRouteByExecutionIdResponse { Found = false }
+            : new GetRouteByExecutionIdResponse
+            {
+                Found = true,
+                RouteId = route.Id.ToString(),
+                RouteName = route.Name
+            };
     }
 }
