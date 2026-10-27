@@ -28,5 +28,9 @@ public class RouteProfile : Profile
 
         CreateMap<RouteBusAssignment, BusAssignmentDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+
+        // Bus (ms-fleet, gRPC) de la ruta en las vistas de detalle (FR-9.1/9.2).
+        // RouteDetailPopulator lo usa: sin este mapa la vista falla con 500.
+        CreateMap<BusInfo, RouteBusDto>();
     }
 }
