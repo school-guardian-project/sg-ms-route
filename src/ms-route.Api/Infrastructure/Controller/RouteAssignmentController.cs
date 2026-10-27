@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ms_route.Api.Infrastructure.Auth;
 using Microsoft.AspNetCore.RateLimiting;
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Ports.In;
@@ -37,6 +38,7 @@ public class RouteAssignmentController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpPost("{routeId:guid}/stops")]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> AttachStop(
         Guid routeId,
         [FromBody] AttachStopRequest request,
@@ -49,6 +51,7 @@ public class RouteAssignmentController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpPost("{routeId:guid}/students")]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> AssignStudent(
         Guid routeId,
         [FromBody] AssignStudentRequest request,
@@ -68,6 +71,7 @@ public class RouteAssignmentController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpPut("{routeId:guid}/bus")]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> AssignBus(
         Guid routeId,
         [FromBody] AssignBusRequest request,
@@ -81,6 +85,7 @@ public class RouteAssignmentController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpDelete("{routeId:guid}/bus")]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> UnassignBus(Guid routeId, CancellationToken ct)
     {
         await _unassignBusFromRouteUseCase.ExecuteAsync(routeId, ct);
@@ -89,6 +94,7 @@ public class RouteAssignmentController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpPost("{routeId:guid}/schedules")]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> CreateSchedule(
         Guid routeId,
         [FromBody] RouteRequestDto request,
@@ -99,6 +105,7 @@ public class RouteAssignmentController : ControllerBase
     }
 
     [HttpGet("{routeId:guid}/schedules")]
+    [RequirePermission("routes.read")]
     public async Task<IActionResult> ListSchedules(Guid routeId, CancellationToken ct)
     {
         var result = await _listRouteSchedulesUseCase.ExecuteAsync(routeId, ct);
@@ -106,6 +113,7 @@ public class RouteAssignmentController : ControllerBase
     }
 
     [HttpGet("{routeId:guid}/students/{studentProfileId:guid}")]
+    [RequirePermission("routes.read")]
     public async Task<IActionResult> GetStudentStop(
         Guid routeId,
         Guid studentProfileId,

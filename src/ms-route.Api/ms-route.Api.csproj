@@ -24,5 +24,7 @@
     <Protobuf Include="Protos\route.proto" GrpcServices="Client" />
     <!-- Contrato servidor: lo que ms-notification consume durante el escaneo (package route). -->
     <Protobuf Include="Protos\route_server.proto" GrpcServices="Server" />
+    <!-- Contrato cliente: acudientes de un estudiante en ms-user-management (package family). -->
+    <Protobuf Include="Protos\family.proto" GrpcServices="Client" />
   </ItemGroup>
 </Project>

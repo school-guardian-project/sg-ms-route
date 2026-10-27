@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ms_route.Api.Infrastructure.Auth;
 using Microsoft.AspNetCore.RateLimiting;
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Ports.In;
@@ -34,6 +35,7 @@ public class StopController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpPost]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> Create([FromBody] StopRequestDto request, CancellationToken ct)
     {
         var result = await _createUseCase.ExecuteAsync(request, ct);
@@ -41,6 +43,7 @@ public class StopController : ControllerBase
     }
 
     [HttpGet]
+    [RequirePermission("routes.read")]
     public async Task<IActionResult> List(CancellationToken ct)
     {
         var result = await _listUseCase.ExecuteAsync(ct);
@@ -48,6 +51,7 @@ public class StopController : ControllerBase
     }
 
     [HttpGet("search")]
+    [RequirePermission("routes.read")]
     public async Task<IActionResult> Search([FromQuery] string search, CancellationToken ct)
     {
         var result = await _searchUseCase.ExecuteAsync(search, ct);
@@ -55,6 +59,7 @@ public class StopController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [RequirePermission("routes.read")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         var result = await _getUseCase.ExecuteAsync(id, ct);
@@ -63,6 +68,7 @@ public class StopController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpPut("{id:guid}")]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> Update(Guid id, [FromBody] StopRequestDto request, CancellationToken ct)
     {
         await _updateUseCase.ExecuteAsync(id, request, ct);
@@ -71,6 +77,7 @@ public class StopController : ControllerBase
 
     [EnableRateLimiting("writes")]
     [HttpDelete("{id:guid}")]
+    [RequirePermission("routes.manage")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         await _deleteUseCase.ExecuteAsync(id, ct);
