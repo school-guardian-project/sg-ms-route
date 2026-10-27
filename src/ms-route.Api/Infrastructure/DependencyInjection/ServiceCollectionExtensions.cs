@@ -3,15 +3,17 @@ using ms_route.Api.Application.Mapper;
 using ms_route.Api.Application.Search.Route;
 using ms_route.Api.Application.Search.Stop;
 using ms_route.Api.Application.UseCase;
+using ms_route.Api.Domain.Port.Out;
 using ms_route.Api.Domain.Ports.In;
 using ms_route.Api.Domain.Ports.Out;
+using ms_route.Api.Domain.Service;
 using ms_route.Api.Infrastructure.Auth;
 using ms_route.Api.Infrastructure.Persistence.Context;
 using ms_route.Api.Infrastructure.Persistence.Mapper;
 using ms_route.Api.Infrastructure.Grpc;
+using ms_route.Api.Infrastructure.Repository;
 using ms_route.Api.Infrastructure.Routing;
 
-using ms_route.Api.Infrastructure.Repository;
 using RouteNameSearchStrategy = ms_route.Api.Application.Search.Route.NameSearchStrategy;
 using StopNameSearchStrategy = ms_route.Api.Application.Search.Stop.NameSearchStrategy;
 using RouteContext = ms_route.Api.Infrastructure.Persistence.Context.RouteContext;
@@ -46,6 +48,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICityRepository, CityRepositoryImpl>();
         services.AddScoped<ISchoolCampusRepository, SchoolCampusRepositoryImpl>();
 
+        // Trip lifecycle services (Domain + Infrastructure)
+        services.AddScoped<ITripBoardingQuery, TripBoardingQueryRepository>();
+        services.AddScoped<ITripLifecycleService, TripLifecycleService>();
+        services.AddScoped<IGetTripStatusMapper, GetTripStatusMapper>();
+
         services.AddHttpContextAccessor();
         services.AddScoped<ITenantProvider, JwtTenantProvider>();
 
@@ -56,8 +63,12 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton(TimeProvider.System);
 
+        // TimeZone para Colombia (UTC-5, sin horario de verano)
+        services.AddSingleton(TimeZoneInfo.FindSystemTimeZoneById("America/Bogota"));
+
         services.AddScoped<ICreateRouteUseCase, CreateRouteService>();
         services.AddScoped<IGetRouteUseCase, GetRouteService>();
+        services.AddScoped<IGetRouteByExecutionIdUseCase, GetRouteByExecutionIdService>();
         services.AddScoped<IListRouteUseCase, ListRouteService>();
         services.AddScoped<IUpdateRouteUseCase, UpdateRouteService>();
         services.AddScoped<IDeleteRouteUseCase, DeleteRouteService>();
@@ -83,6 +94,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStartTripUseCase, StartTripService>();
         services.AddScoped<IEndTripUseCase, EndTripService>();
         services.AddScoped<IGetCurrentTripUseCase, GetCurrentTripService>();
+        services.AddScoped<IGetTripStatusUseCase, GetTripStatusService>();
         services.AddScoped<IGetStudentStopOnRouteUseCase, GetStudentStopOnRouteService>();
         services.AddScoped<IGetStudentRouteUseCase, GetStudentRouteService>();
         services.AddScoped<IRouteStopFilter, RouteStopFilter>();

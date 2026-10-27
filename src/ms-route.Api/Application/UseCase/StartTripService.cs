@@ -4,6 +4,7 @@ using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Model;
 using ms_route.Api.Domain.Ports.In;
 using ms_route.Api.Domain.Ports.Out;
+using ms_route.Api.Domain.Service;
 using RouteModel = ms_route.Api.Domain.Model.Route;
 
 namespace ms_route.Api.Application.UseCase;
@@ -17,8 +18,10 @@ public class StartTripService : IStartTripUseCase
     private readonly IFleetService _fleetService;
     private readonly IMapper _mapper;
     private readonly TimeProvider _timeProvider;
+    private readonly ITripLifecycleService _tripLifecycleService;
+    private readonly TimeZoneInfo _timeZone;
 
-    private static readonly TimeSpan EarlyGrace = TimeSpan.FromMinutes(15);
+    // Configuración por defecto
     private static readonly TimeSpan FallbackDuration = TimeSpan.FromHours(1);
     private const int MinutesPerDay = 24 * 60;
 
@@ -29,7 +32,9 @@ public class StartTripService : IStartTripUseCase
         IRouteRepository routeRepository,
         IFleetService fleetService,
         IMapper mapper,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        ITripLifecycleService tripLifecycleService,
+        TimeZoneInfo timeZone)
     {
         _executionRepository = executionRepository;
         _scheduleRepository = scheduleRepository;
@@ -38,11 +43,13 @@ public class StartTripService : IStartTripUseCase
         _fleetService = fleetService;
         _mapper = mapper;
         _timeProvider = timeProvider;
+        _tripLifecycleService = tripLifecycleService;
+        _timeZone = timeZone;
     }
 
     public async Task<TripResponseDto> ExecuteAsync(Guid routeId, Guid busId, Guid driverId, CancellationToken ct = default)
     {
-        // 1) Validar que el conductor NO tenga un viaje activo hoy (corte por dia local)
+        // 1) Validar que el conductor NO tenga un viaje activo hoy (corte por día local)
         var dayStartUtc = LocalClock.StartOfLocalDayUtc(_timeProvider);
         var existing = await _executionRepository.GetActiveByDriverAsync(driverId, dayStartUtc, ct);
         if (existing is not null)
@@ -51,7 +58,7 @@ public class StartTripService : IStartTripUseCase
                 $"Driver {driverId} already has an active trip (id={existing.Id}) started today");
         }
 
-        // 2) Validar que la ruta tenga horario activo para el dia local
+        // 2) Validar que la ruta tenga horario activo para el día local
         var bus = await _fleetService.GetBusAssignedToDriverAsync(driverId, ct);
         if (bus is null || bus.Id != busId)
             throw new InvalidOperationException("Bus not assigned to this driver");
@@ -65,16 +72,32 @@ public class StartTripService : IStartTripUseCase
             throw new InvalidOperationException("Route not found or inactive");
 
         var schedules = await _scheduleRepository.GetByRouteIdAsync(routeId, ct);
-        var localNow = LocalClock.UtcNow(_timeProvider);
+        var localNow = GetLocalNow();
 
-        var activeSchedule = schedules.FirstOrDefault(s => IsWithinActiveWindow(localNow, s, route));
-        if (activeSchedule is null)
+        // Buscar el schedule de hoy para obtener el StartTime
+        var todaysSchedule = schedules.FirstOrDefault(s => s.DayOfWeek == localNow.DayOfWeek);
+        if (todaysSchedule is null)
         {
             throw new InvalidOperationException(
-                "Route has no active schedule for today; trip cannot start outside the schedule window");
+                $"Route has no schedule for today ({localNow.DayOfWeek}); trip cannot start");
         }
 
-        // 3) Crear el viaje con la dirección del horario activo (Ida/Vuelta)
+        // 3) Usar el servicio de dominio para validar ventana de inicio
+        // Ventana: StartTime → StartTime + 20 min (GracePeriod)
+        var canStart = await _tripLifecycleService.CanStartTripAsync(
+            todaysSchedule.StartTime,
+            TimeOnly.FromDateTime(localNow.DateTime),
+            ct: ct);
+
+        if (!canStart)
+        {
+            var windowClosesAt = todaysSchedule.StartTime.Add(TripLifecycleService.DefaultStartGracePeriod);
+            throw new InvalidOperationException(
+                $"Trip can only be started between {todaysSchedule.StartTime:HH:mm} and {windowClosesAt:HH:mm}. " +
+                $"Current time: {localNow:HH:mm}");
+        }
+
+        // 4) Crear el viaje con la dirección del horario activo (Ida/Vuelta)
         var execution = new RouteExecution
         {
             Id = Guid.NewGuid(),
@@ -83,38 +106,16 @@ public class StartTripService : IStartTripUseCase
             DriverId = driverId,
             StartDateTime = DateTime.UtcNow,
             Status = Status.Active,
-            Direction = activeSchedule.Direction
+            Direction = todaysSchedule.Direction
         };
 
         var saved = await _executionRepository.SaveAsync(execution, ct);
         return _mapper.Map<TripResponseDto>(saved);
     }
 
-    /// <summary>
-    /// Mismo criterio de ventana que <see cref="GetDriverRouteTodayService.IsWithinActiveWindow"/>:
-    /// el viaje solo puede iniciarse dentro de la ventana del dia (salida - 15min .. fin de ruta).
-    /// </summary>
-    private static bool IsWithinActiveWindow(
-        DateTimeOffset localNow,
-        RouteSchedule schedule,
-        RouteModel route)
+    private DateTimeOffset GetLocalNow()
     {
-        if (schedule.DayOfWeek != localNow.DayOfWeek) return false;
-
-        var startMinutes = schedule.StartTime.Hour * 60 + schedule.StartTime.Minute;
-        var endMinutes = route.EndTime.Hour * 60 + route.EndTime.Minute;
-
-        // Fin inutil (p.ej. 00:00:00 de datos sin configurar): se acota a 1h tras la salida.
-        if (endMinutes <= startMinutes)
-            endMinutes = startMinutes + (int)FallbackDuration.TotalMinutes;
-
-        var opensAt = startMinutes - (int)EarlyGrace.TotalMinutes;
-        var closesAt = endMinutes;
-
-        var nowMinutes = localNow.Hour * 60 + localNow.Minute;
-        var elapsed = (nowMinutes - opensAt + MinutesPerDay) % MinutesPerDay;
-        var span = (closesAt - opensAt + MinutesPerDay) % MinutesPerDay;
-
-        return span > 0 && elapsed <= span;
+        var utcNow = _timeProvider.GetUtcNow();
+        return TimeZoneInfo.ConvertTime(utcNow, _timeZone);
     }
 }

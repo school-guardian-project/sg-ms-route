@@ -25,6 +25,7 @@ service RouteService {
   rpc GetStudentStopOnRoute (GetStudentStopOnRouteRequest) returns (GetStudentStopOnRouteResponse);
   rpc GetCurrentTrip (GetCurrentTripRequest) returns (GetCurrentTripResponse);
   rpc GetRouteByExecutionId (GetRouteByExecutionIdRequest) returns (GetRouteByExecutionIdResponse);
+  rpc GetTripStatus (GetTripStatusRequest) returns (GetTripStatusResponse);
 }
 
 message CreateRouteRequest {
@@ -251,4 +252,34 @@ message GetRouteByExecutionIdResponse {
   bool found = 1;
   string route_id = 2;
   string route_name = 3;
+}
+
+message GetTripStatusRequest {
+  string driver_id = 1;
+}
+
+message GetTripStatusResponse {
+  bool found = 1;
+  string trip_id = 2;
+  string route_id = 3;
+  string route_name = 4;
+  string direction = 5;
+  int32 status = 6;  // TripLifecycleStatus enum
+  bool can_start = 7;
+  bool can_end = 8;
+  string message = 9;
+  string schedule_start_time = 10;
+  string next_schedule_time = 11;
+  
+  // Detalle de condición de fin (solo si can_end = true o en progreso)
+  TripEndConditionDetail end_condition_detail = 12;
+}
+
+message TripEndConditionDetail {
+  bool can_end = 1;
+  int32 total_assigned_students = 2;
+  int32 students_alighted_at_final_stop = 3;
+  bool is_final_stop_reached = 4;
+  string final_stop_name = 5;
+  string message = 6;
 }

@@ -11,6 +11,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
 {
     private readonly ICreateRouteUseCase _createUseCase;
     private readonly IGetRouteUseCase _getUseCase;
+    private readonly IGetRouteByExecutionIdUseCase _getRouteByExecutionIdUseCase;
     private readonly IListRouteUseCase _listUseCase;
     private readonly IUpdateRouteUseCase _updateUseCase;
     private readonly IDeleteRouteUseCase _deleteUseCase;
@@ -23,10 +24,12 @@ public class RouteGrpcService : RouteService.RouteServiceBase
     private readonly IAttachStopToRouteUseCase _attachStopUseCase;
     private readonly IGetStudentStopOnRouteUseCase _getStudentStopOnRouteUseCase;
     private readonly IGetCurrentTripUseCase _getCurrentTripUseCase;
+    private readonly IGetTripStatusUseCase _getTripStatusUseCase;
 
     public RouteGrpcService(
         ICreateRouteUseCase createUseCase,
         IGetRouteUseCase getUseCase,
+        IGetRouteByExecutionIdUseCase getRouteByExecutionIdUseCase,
         IListRouteUseCase listUseCase,
         IUpdateRouteUseCase updateUseCase,
         IDeleteRouteUseCase deleteUseCase,
@@ -38,10 +41,12 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         IAssignBusToRouteUseCase assignBusUseCase,
         IAttachStopToRouteUseCase attachStopUseCase,
         IGetStudentStopOnRouteUseCase getStudentStopOnRouteUseCase,
-        IGetCurrentTripUseCase getCurrentTripUseCase)
+        IGetCurrentTripUseCase getCurrentTripUseCase,
+        IGetTripStatusUseCase getTripStatusUseCase)
     {
         _createUseCase = createUseCase;
         _getUseCase = getUseCase;
+        _getRouteByExecutionIdUseCase = getRouteByExecutionIdUseCase;
         _listUseCase = listUseCase;
         _updateUseCase = updateUseCase;
         _deleteUseCase = deleteUseCase;
@@ -54,6 +59,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         _attachStopUseCase = attachStopUseCase;
         _getStudentStopOnRouteUseCase = getStudentStopOnRouteUseCase;
         _getCurrentTripUseCase = getCurrentTripUseCase;
+        _getTripStatusUseCase = getTripStatusUseCase;
     }
 
     public override async Task<CreateRouteResponse> CreateRoute(
@@ -396,8 +402,64 @@ public class RouteGrpcService : RouteService.RouteServiceBase
     public override async Task<GetRouteByExecutionIdResponse> GetRouteByExecutionId(
         GetRouteByExecutionIdRequest request, ServerCallContext context)
     {
-        // TODO: Implementar caso de uso IGetRouteByExecutionIdUseCase
-        // Por ahora retornamos NotFound para que el cliente maneje el caso
-        return new GetRouteByExecutionIdResponse { Found = false };
+        var route = await _getRouteByExecutionIdUseCase.ExecuteAsync(
+            ParseId(request.ExecutionId, "execution_id"), context.CancellationToken);
+        return route is null
+            ? new GetRouteByExecutionIdResponse { Found = false }
+            : new GetRouteByExecutionIdResponse
+            {
+                Found = true,
+                RouteId = route.Id.ToString(),
+                RouteName = route.Name
+            };
+    }
+
+    public override async Task<GetTripStatusResponse> GetTripStatus(
+        GetTripStatusRequest request, ServerCallContext context)
+    {
+        try
+        {
+            var driverId = ParseId(request.DriverId, "driver_id");
+            var result = await _getTripStatusUseCase.ExecuteAsync(driverId, context.CancellationToken);
+
+            if (result is null)
+            {
+                return new GetTripStatusResponse { Found = false };
+            }
+
+            var response = new GetTripStatusResponse
+            {
+                Found = true,
+                TripId = result.TripId.ToString(),
+                RouteId = result.RouteId.ToString(),
+                RouteName = result.RouteName,
+                Direction = result.Direction,
+                Status = (int)result.Status,
+                CanStart = result.CanStart,
+                CanEnd = result.CanEnd,
+                Message = result.Message,
+                ScheduleStartTime = result.ScheduleStartTime.ToString("HH:mm:ss"),
+                NextScheduleTime = result.NextScheduleTime?.ToString("HH:mm:ss") ?? string.Empty
+            };
+
+            if (result.EndConditionDetail is not null)
+            {
+                response.EndConditionDetail = new TripEndConditionDetail
+                {
+                    CanEnd = result.EndConditionDetail.CanEnd,
+                    TotalAssignedStudents = result.EndConditionDetail.TotalAssignedStudents,
+                    StudentsAlightedAtFinalStop = result.EndConditionDetail.StudentsAlightedAtFinalStop,
+                    IsFinalStopReached = result.EndConditionDetail.IsFinalStopReached,
+                    FinalStopName = result.EndConditionDetail.FinalStopName,
+                    Message = result.EndConditionDetail.Message
+                };
+            }
+
+            return response;
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new RpcException(new global::Grpc.Core.Status(StatusCode.FailedPrecondition, ex.Message));
+        }
     }
 }
