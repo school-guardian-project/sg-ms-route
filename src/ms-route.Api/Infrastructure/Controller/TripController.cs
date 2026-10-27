@@ -12,15 +12,18 @@ public class TripController : ControllerBase
     private readonly IStartTripUseCase _startTripUseCase;
     private readonly IEndTripUseCase _endTripUseCase;
     private readonly IGetCurrentTripUseCase _getCurrentTripUseCase;
+    private readonly IGetTripStatusUseCase _getTripStatusUseCase;
 
     public TripController(
         IStartTripUseCase startTripUseCase,
         IEndTripUseCase endTripUseCase,
-        IGetCurrentTripUseCase getCurrentTripUseCase)
+        IGetCurrentTripUseCase getCurrentTripUseCase,
+        IGetTripStatusUseCase getTripStatusUseCase)
     {
         _startTripUseCase = startTripUseCase;
         _endTripUseCase = endTripUseCase;
         _getCurrentTripUseCase = getCurrentTripUseCase;
+        _getTripStatusUseCase = getTripStatusUseCase;
     }
 
     [EnableRateLimiting("writes")]
@@ -43,7 +46,13 @@ public class TripController : ControllerBase
     public async Task<IActionResult> GetCurrentTrip(Guid driverId, CancellationToken ct)
     {
         var result = await _getCurrentTripUseCase.ExecuteAsync(driverId, ct);
+        return result is null ? NotFound() : Ok(result);
+    }
 
+    [HttpGet("status")]
+    public async Task<IActionResult> GetTripStatus(Guid driverId, CancellationToken ct)
+    {
+        var result = await _getTripStatusUseCase.ExecuteAsync(driverId, ct);
         return result is null ? NotFound() : Ok(result);
     }
 }
