@@ -16,5 +16,10 @@ public class StopProfile : Profile
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
 
         CreateMap<StopRequestDto, Stop>();
+
+        CreateMap<Stop, StopDetailDto>();
+
+        CreateMap<RouteSchedule, ScheduleDetailDto>()
+            .ForMember(dest => dest.DayOfWeek, opt => opt.MapFrom(src => src.DayOfWeek.ToString()));
     }
 }

@@ -102,7 +102,10 @@ public class GetStudentRouteServiceTests
     }
 
     private GetStudentRouteService CreateService()
-        => new(
+    {
+        var mapper = TestMapper.Create();
+        var stopFilter = new RouteStopFilter();
+        return new(
             _routes,
             _studentAssignments,
             _routeStops,
@@ -110,7 +113,10 @@ public class GetStudentRouteServiceTests
             _busAssignments,
             _schedules,
             _fleet,
-            TestMapper.Create());
+            mapper,
+            stopFilter,
+            new RouteDetailPopulator(_busAssignments, _schedules, _fleet, _routeStops, _stops, mapper, stopFilter));
+    }
 
     [Test]
     public async Task ExecuteAsync_SinAsignacionDeEstudiante_RetornaNull()
