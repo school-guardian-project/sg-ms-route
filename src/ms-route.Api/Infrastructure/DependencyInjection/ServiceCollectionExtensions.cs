@@ -68,6 +68,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<ICreateRouteUseCase, CreateRouteService>();
         services.AddScoped<IGetRouteUseCase, GetRouteService>();
+        services.AddScoped<IGetRouteByExecutionIdUseCase, GetRouteByExecutionIdService>();
         services.AddScoped<IListRouteUseCase, ListRouteService>();
         services.AddScoped<IUpdateRouteUseCase, UpdateRouteService>();
         services.AddScoped<IDeleteRouteUseCase, DeleteRouteService>();
@@ -96,6 +97,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGetTripStatusUseCase, GetTripStatusService>();
         services.AddScoped<IGetStudentStopOnRouteUseCase, GetStudentStopOnRouteService>();
         services.AddScoped<IGetStudentRouteUseCase, GetStudentRouteService>();
+        services.AddScoped<IRouteStopFilter, RouteStopFilter>();
+        services.AddScoped<IRouteDetailPopulator, RouteDetailPopulator>();
         services.AddScoped<IAssignStudentToRouteUseCase, AssignStudentToRouteService>();
         services.AddScoped<IAssignBusToRouteUseCase, AssignBusToRouteService>();
         services.AddScoped<IUnassignBusFromRouteUseCase, UnassignBusFromRouteService>();
