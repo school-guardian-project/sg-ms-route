@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ms_route.Api.Application.Mapper;
 using ms_route.Api.Application.Search.Route;
 using ms_route.Api.Application.Search.Stop;
+using ms_route.Api.Application.Security;
 using ms_route.Api.Application.UseCase;
 using ms_route.Api.Domain.Port.Out;
 using ms_route.Api.Domain.Ports.In;
@@ -55,6 +56,12 @@ public static class ServiceCollectionExtensions
 
         services.AddHttpContextAccessor();
         services.AddScoped<ITenantProvider, JwtTenantProvider>();
+        services.AddScoped<ICurrentUser, ClaimsCurrentUser>();
+        services.AddScoped<IRouteAccessPolicy, RouteAccessPolicy>();
+
+        // Acudientes de un estudiante (ms-user-management, gRPC): autorizan que
+        // un acudiente vea la ruta de su hijo.
+        services.AddSingleton<IStudentGuardianDirectory, FamilyGrpcClient>();
 
         // Los buses (placa/conductor) los expone ms-fleet a través de gRPC.
         // Singleton porque cada cliente GrpcChannel abre conexiones que conviene

@@ -1,5 +1,6 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using ms_route.Api.Domain.Exceptions;
 using ms_route.Api.Infrastructure.Auth;
 using ms_route.Api.Infrastructure.DependencyInjection;
 using ms_route.Api.Infrastructure.Grpc;
@@ -71,6 +72,11 @@ app.Use(async (context, next) =>
     try
     {
         await next();
+    }
+    catch (AccessDeniedException ex) when (!context.Response.HasStarted)
+    {
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        await Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status403Forbidden).ExecuteAsync(context);
     }
     catch (Exception ex) when (ex is ArgumentException or InvalidOperationException && !context.Response.HasStarted)
     {
