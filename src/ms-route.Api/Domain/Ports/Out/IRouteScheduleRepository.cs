@@ -25,4 +25,10 @@ public interface IRouteScheduleRepository
         Guid routeBusAssignmentId,
         TimeOnly startTime,
         CancellationToken ct = default);
+
+    Task SynchronizeActiveDaysAsync(
+        Guid routeBusAssignmentId,
+        TimeOnly startTime,
+        IReadOnlyCollection<DayOfWeek> days,
+        CancellationToken ct = default);
 }

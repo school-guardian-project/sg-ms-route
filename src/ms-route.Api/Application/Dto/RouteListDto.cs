@@ -8,5 +8,6 @@ public class RouteListDto
     public string TargetSector { get; set; } = string.Empty;
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
+    public List<string> DaysOfWeek { get; set; } = new();
     public int StopsCount { get; set; }
 }

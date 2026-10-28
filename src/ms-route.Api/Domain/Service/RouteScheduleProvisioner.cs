@@ -25,6 +25,30 @@ public class RouteScheduleProvisioner : IRouteScheduleProvisioner
         _scheduleRepository = scheduleRepository;
     }
 
+    public static IReadOnlyList<DayOfWeek> ParseConfiguredDays(IEnumerable<string>? configuredDays)
+    {
+        var values = configuredDays?.ToList() ?? [];
+        if (values.Count == 0)
+            return WorkingDays;
+
+        var days = new List<DayOfWeek>();
+        foreach (var value in values)
+        {
+            if (!Enum.TryParse<DayOfWeek>(value, ignoreCase: true, out var day)
+                || !WorkingDays.Contains(day))
+            {
+                throw new ArgumentException(
+                    "DayOfWeek must be one of Monday, Tuesday, Wednesday, Thursday or Friday.",
+                    nameof(configuredDays));
+            }
+
+            if (!days.Contains(day))
+                days.Add(day);
+        }
+
+        return days;
+    }
+
     public async Task<IReadOnlyList<RouteSchedule>> EnsureSchedulesAsync(
         Guid routeBusAssignmentId,
         TimeOnly startTime,
@@ -65,4 +89,20 @@ public class RouteScheduleProvisioner : IRouteScheduleProvisioner
         TimeOnly startTime,
         CancellationToken ct = default)
         => _scheduleRepository.UpdateStartTimeAsync(routeBusAssignmentId, startTime, ct);
+
+    public Task SyncSchedulesAsync(
+        Guid routeBusAssignmentId,
+        TimeOnly startTime,
+        IEnumerable<DayOfWeek> days,
+        CancellationToken ct = default)
+    {
+        var validatedDays = days.Distinct().ToList();
+        if (validatedDays.Any(day => !WorkingDays.Contains(day)))
+            throw new ArgumentException(
+                "DayOfWeek must be one of Monday, Tuesday, Wednesday, Thursday or Friday.",
+                nameof(days));
+
+        return _scheduleRepository.SynchronizeActiveDaysAsync(
+            routeBusAssignmentId, startTime, validatedDays, ct);
+    }
 }

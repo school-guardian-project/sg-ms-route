@@ -45,4 +45,23 @@ public sealed class RouteSchemaMetadataTests
             Assert.That(direction.GetDefaultValue(), Is.EqualTo("Ida"));
         });
     }
+
+    [Test]
+    public void RouteDaysOfWeekIsStoredAsRequiredTextWithAnEmptyArrayDefault()
+    {
+        var options = new DbContextOptionsBuilder<RouteContext>()
+            .UseSqlServer("Server=localhost;Database=metadata-only;User Id=unused;******;TrustServerCertificate=True")
+            .Options;
+
+        using var context = new RouteContext(options);
+        var daysOfWeek = context.Model.FindEntityType(typeof(RouteEntity))!
+            .FindProperty(nameof(RouteEntity.DaysOfWeek))!;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(daysOfWeek.GetColumnType(), Is.EqualTo("nvarchar(max)"));
+            Assert.That(daysOfWeek.IsNullable, Is.False);
+            Assert.That(daysOfWeek.GetDefaultValueSql(), Is.EqualTo("N'[]'"));
+        });
+    }
 }

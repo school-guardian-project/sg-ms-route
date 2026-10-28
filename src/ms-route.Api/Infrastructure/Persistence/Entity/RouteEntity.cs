@@ -10,5 +10,6 @@ public class RouteEntity
     public string TargetSector { get; set; } = string.Empty;
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
+    public List<string> DaysOfWeek { get; set; } = new();
     public Status Status { get; set; } = Status.Active;
 }

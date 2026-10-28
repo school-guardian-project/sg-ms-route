@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ms_route.Api.Domain.Model;
 using ms_route.Api.Domain.Ports.Out;
+using ms_route.Api.Domain.Service;
 using ms_route.Api.Infrastructure.Persistence.Entity;
 using RouteContext = ms_route.Api.Infrastructure.Persistence.Context.RouteContext;
 
@@ -89,6 +90,55 @@ public class RouteScheduleRepositoryImpl : IRouteScheduleRepository
         await _context.RouteSchedules
             .Where(s => s.RouteBusAssignmentsId == routeBusAssignmentId && s.Status == Status.Active)
             .ExecuteUpdateAsync(set => set.SetProperty(s => s.StartTime, startTime), ct);
+    }
+
+    public async Task SynchronizeActiveDaysAsync(
+        Guid routeBusAssignmentId,
+        TimeOnly startTime,
+        IReadOnlyCollection<DayOfWeek> days,
+        CancellationToken ct = default)
+    {
+        var schedules = await _context.RouteSchedules
+            .Where(s => s.RouteBusAssignmentsId == routeBusAssignmentId)
+            .ToListAsync(ct);
+        var activeSchedules = new HashSet<(DayOfWeek Day, string Direction)>();
+        var configuredDays = days.ToHashSet();
+
+        foreach (var schedule in schedules)
+        {
+            var isConfigured = configuredDays.Contains(schedule.DayOfWeek)
+                && RouteScheduleProvisioner.Directions.Contains(schedule.Direction);
+            var key = (schedule.DayOfWeek, schedule.Direction);
+            var shouldBeActive = schedule.Status == Status.Active
+                && isConfigured
+                && activeSchedules.Add(key);
+
+            if (schedule.Status == Status.Active)
+                schedule.Status = shouldBeActive ? Status.Active : Status.Inactive;
+            if (shouldBeActive)
+                schedule.StartTime = startTime;
+        }
+
+        foreach (var day in configuredDays)
+        {
+            foreach (var direction in RouteScheduleProvisioner.Directions)
+            {
+                if (activeSchedules.Add((day, direction)))
+                {
+                    _context.RouteSchedules.Add(new RouteScheduleEntity
+                    {
+                        Id = Guid.NewGuid(),
+                        RouteBusAssignmentsId = routeBusAssignmentId,
+                        DayOfWeek = day,
+                        Direction = direction,
+                        StartTime = startTime,
+                        Status = Status.Active
+                    });
+                }
+            }
+        }
+
+        await _context.SaveChangesAsync(ct);
     }
 
     private static RouteSchedule ToDomain(RouteScheduleEntity entity) => new()

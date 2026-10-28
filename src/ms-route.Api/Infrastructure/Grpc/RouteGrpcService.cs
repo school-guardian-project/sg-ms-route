@@ -89,7 +89,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         {
             var result = await _getUseCase.ExecuteAsync(ParseId(request.Id, "route_id"), context.CancellationToken);
 
-            return new GetRouteResponse
+            var response = new GetRouteResponse
             {
                 Id = result.Id.ToString(),
                 Name = result.Name,
@@ -99,6 +99,8 @@ public class RouteGrpcService : RouteService.RouteServiceBase
                 StartTime = result.StartTime.ToString("HH:mm:ss"),
                 EndTime = result.EndTime.ToString("HH:mm:ss")
             };
+            response.DaysOfWeek.AddRange(result.DaysOfWeek);
+            return response;
         }
         catch (InvalidOperationException ex)
         {
@@ -112,10 +114,15 @@ public class RouteGrpcService : RouteService.RouteServiceBase
         var routes = await _listUseCase.ExecuteAsync(context.CancellationToken);
 
         var response = new ListRoutesResponse();
-        response.Routes.AddRange(routes.Select(r => new RouteListItem
+        response.Routes.AddRange(routes.Select(r =>
         {
-            Id = r.Id.ToString(),
-            Name = r.Name
+            var item = new RouteListItem
+            {
+                Id = r.Id.ToString(),
+                Name = r.Name
+            };
+            item.DaysOfWeek.AddRange(r.DaysOfWeek);
+            return item;
         }));
 
         return response;
@@ -129,7 +136,7 @@ public class RouteGrpcService : RouteService.RouteServiceBase
             await _updateUseCase.ExecuteAsync(
                 ParseId(request.Id, "route_id"), ToRouteRequestDto(request), context.CancellationToken);
 
-            return new UpdateRouteResponse
+            var response = new UpdateRouteResponse
             {
                 Id = request.Id,
                 Name = request.Name,
@@ -138,6 +145,8 @@ public class RouteGrpcService : RouteService.RouteServiceBase
                 StartTime = request.StartTime,
                 EndTime = request.EndTime
             };
+            response.DaysOfWeek.AddRange(request.DaysOfWeek);
+            return response;
         }
         catch (ArgumentException ex)
         {

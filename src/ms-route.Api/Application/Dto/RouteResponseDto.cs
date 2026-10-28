@@ -8,6 +8,7 @@ public class RouteResponseDto
     public string TargetSector { get; set; } = string.Empty;
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
+    public List<string> DaysOfWeek { get; set; } = new();
     public string Status { get; set; } = string.Empty;
     public Guid? BusId { get; set; }
     public RouteBusDto? Bus { get; set; }

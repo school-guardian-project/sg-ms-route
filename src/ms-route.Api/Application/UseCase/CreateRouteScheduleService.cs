@@ -35,7 +35,7 @@ public class CreateRouteScheduleService : ICreateRouteScheduleUseCase
 
         // Se validan todos los dias antes de escribir: un dia invalido no deja
         // horarios a medio crear.
-        var days = request.DaysOfWeek.Select(ParseWorkingDay).ToList();
+        var days = RouteScheduleProvisioner.ParseConfiguredDays(request.DaysOfWeek);
 
         var assignment = await _assignmentRepository.GetActiveByRouteIdAsync(routeId, ct);
         if (assignment is null)
@@ -54,14 +54,4 @@ public class CreateRouteScheduleService : ICreateRouteScheduleUseCase
             .ToList();
     }
 
-    private static DayOfWeek ParseWorkingDay(string value)
-    {
-        if (Enum.TryParse<DayOfWeek>(value, ignoreCase: true, out var day)
-            && RouteScheduleProvisioner.WorkingDays.Contains(day))
-            return day;
-
-        throw new ArgumentException(
-            "DayOfWeek must be one of Monday, Tuesday, Wednesday, Thursday or Friday.",
-            nameof(RouteRequestDto.DaysOfWeek));
-    }
 }

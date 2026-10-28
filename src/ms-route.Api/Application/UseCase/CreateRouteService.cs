@@ -3,6 +3,7 @@ using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Model;
 using ms_route.Api.Domain.Ports.In;
 using ms_route.Api.Domain.Ports.Out;
+using ms_route.Api.Domain.Service;
 using RouteModel = ms_route.Api.Domain.Model.Route;
 
 namespace ms_route.Api.Application.UseCase;
@@ -28,6 +29,10 @@ public class CreateRouteService : ICreateRouteUseCase
             throw new InvalidOperationException("Route already exists");
 
         var route = _mapper.Map<RouteModel>(request);
+        var configuredDays = RouteScheduleProvisioner.ParseConfiguredDays(route.DaysOfWeek);
+        route.DaysOfWeek = route.DaysOfWeek is { Count: > 0 }
+            ? configuredDays.Select(day => day.ToString()).ToList()
+            : [];
         route.Id = Guid.NewGuid();
         route.Status = Status.Active;
 

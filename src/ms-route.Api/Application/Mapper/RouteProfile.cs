@@ -10,11 +10,13 @@ public class RouteProfile : Profile
     public RouteProfile()
     {
         CreateMap<RouteModel, RouteListDto>()
-            .ForMember(dest => dest.CampuseId, opt => opt.MapFrom(src => src.CampuseId.ToString()));
+            .ForMember(dest => dest.CampuseId, opt => opt.MapFrom(src => src.CampuseId.ToString()))
+            .ForMember(dest => dest.DaysOfWeek, opt => opt.MapFrom(src => src.DaysOfWeek));
 
         CreateMap<RouteModel, RouteResponseDto>()
             .ForMember(dest => dest.CampuseId, opt => opt.MapFrom(src => src.CampuseId.ToString()))
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+            .ForMember(dest => dest.DaysOfWeek, opt => opt.MapFrom(src => src.DaysOfWeek));
 
         CreateMap<RouteRequestDto, RouteModel>();
 

@@ -32,6 +32,8 @@ public class AssignBusToRouteService : IAssignBusToRouteUseCase
         if (route is null || route.Status != Status.Active)
             throw new InvalidOperationException($"Route not found: {routeId}");
 
+        var routeDays = RouteScheduleProvisioner.ParseConfiguredDays(route.DaysOfWeek);
+
         // Un bus por ruta.
         if (await _assignmentRepository.RouteHasBusAsync(routeId, ct))
             throw new InvalidOperationException("The route already has a bus assigned");
@@ -51,10 +53,11 @@ public class AssignBusToRouteService : IAssignBusToRouteUseCase
 
         var saved = await _assignmentRepository.SaveAsync(assignment, ct);
 
-        // Los horarios cuelgan de la asignacion: sin ellos el conductor nunca ve
-        // habilitado el inicio del viaje. Se crean con la hora de salida de la ruta.
-        await _scheduleProvisioner.EnsureSchedulesAsync(
-            saved.Id, route.StartTime, RouteScheduleProvisioner.WorkingDays, ct);
+        await _scheduleProvisioner.SyncSchedulesAsync(
+            saved.Id,
+            route.StartTime,
+            routeDays,
+            ct);
 
         return _mapper.Map<BusAssignmentDto>(saved);
     }

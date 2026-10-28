@@ -143,4 +143,57 @@ public class UpdateRouteServiceTests
         Assert.That(_schedules.Schedules.All(s =>
             s.RouteBusAssignmentsId == assignmentId && s.StartTime == new TimeOnly(6, 0)), Is.True);
     }
+
+    [Test]
+    public async Task ExecuteAsync_AlCambiarLosDias_DesactivaLosDiasRetiradosYActivaLosNuevos()
+    {
+        var repo = new InMemoryRouteRepository();
+        var routeId = Guid.NewGuid();
+        repo.Routes.Add(new RouteModel
+        {
+            Id = routeId,
+            Name = "R-01",
+            Status = Status.Active,
+            DaysOfWeek = ["Monday", "Wednesday"]
+        });
+        var assignmentId = Guid.NewGuid();
+        _assignments.Assignments.Add(new RouteBusAssignment
+        {
+            Id = assignmentId,
+            RouteId = routeId,
+            BusId = Guid.NewGuid(),
+            Status = Status.Active
+        });
+        foreach (var day in new[] { DayOfWeek.Monday, DayOfWeek.Wednesday })
+        {
+            foreach (var direction in RouteScheduleProvisioner.Directions)
+            {
+                _schedules.Schedules.Add(new RouteSchedule
+                {
+                    RouteBusAssignmentsId = assignmentId,
+                    DayOfWeek = day,
+                    Direction = direction,
+                    StartTime = new TimeOnly(6, 30),
+                    Status = Status.Active
+                });
+            }
+        }
+
+        await Service(repo).ExecuteAsync(routeId, new RouteRequestDto
+        {
+            CampuseId = Guid.NewGuid(),
+            Name = "R-01",
+            TargetSector = "Norte",
+            StartTime = new TimeOnly(7, 0),
+            DaysOfWeek = ["Tuesday", "Thursday"]
+        });
+
+        Assert.That(_schedules.Schedules
+            .Where(schedule => schedule.Status == Status.Active)
+            .Select(schedule => schedule.DayOfWeek).Distinct(),
+            Is.EquivalentTo(new[] { DayOfWeek.Tuesday, DayOfWeek.Thursday }));
+        Assert.That(_schedules.Schedules
+            .Where(schedule => schedule.Status == Status.Active)
+            .All(schedule => schedule.StartTime == new TimeOnly(7, 0)), Is.True);
+    }
 }

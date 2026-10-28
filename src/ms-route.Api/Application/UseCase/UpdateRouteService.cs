@@ -35,18 +35,26 @@ public class UpdateRouteService : IUpdateRouteUseCase
         if (existing is null)
             throw new InvalidOperationException($"Route not found: {id}");
 
+        var requestedDays = request.DaysOfWeek is { Count: > 0 }
+            ? request.DaysOfWeek.ToList()
+            : existing.DaysOfWeek.ToList();
+        var scheduleDays = RouteScheduleProvisioner.ParseConfiguredDays(requestedDays);
+        var daysToPersist = requestedDays.Count > 0
+            ? scheduleDays.Select(day => day.ToString()).ToList()
+            : [];
+
         _mapper.Map(request, existing);
+        existing.DaysOfWeek = daysToPersist;
 
         await _repository.UpdateAsync(existing, ct);
 
-        // Una ruta con bus siempre tiene horarios con su hora de salida vigente: se
-        // crean los que falten (rutas asignadas antes de esta regla) y se alinea la
-        // hora de los existentes para que la ventana de inicio no use una hora vieja.
         var assignment = await _assignmentRepository.GetActiveByRouteIdAsync(id, ct);
         if (assignment is null) return;
 
-        await _scheduleProvisioner.EnsureSchedulesAsync(
-            assignment.Id, existing.StartTime, RouteScheduleProvisioner.WorkingDays, ct);
-        await _scheduleProvisioner.SyncStartTimeAsync(assignment.Id, existing.StartTime, ct);
+        await _scheduleProvisioner.SyncSchedulesAsync(
+            assignment.Id,
+            existing.StartTime,
+            scheduleDays,
+            ct);
     }
 }

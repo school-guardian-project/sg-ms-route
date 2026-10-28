@@ -1,5 +1,15 @@
 # sg-ms-route
 
+## Route workday persistence
+
+Routes persist selected weekdays in `Route.Route.DaysOfWeek` as JSON text. Apply
+`database/ms-route-db/01-ddl/04-alter/011-add-days-of-week-to-route.sql` through
+the route Liquibase changelog before deploying this service version; existing
+rows default to an empty list and continue using the legacy Monday-to-Friday
+schedule until configured. The service uses
+`ConnectionStrings__DefaultConnection` for its SQL Server connection and does
+not apply schema migrations at startup.
+
 ## Docker listeners
 
 Compose keeps HTTP/1 on port 8080 for Kong and enables HTTP/2 without TLS on

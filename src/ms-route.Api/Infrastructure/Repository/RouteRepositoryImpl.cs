@@ -57,6 +57,7 @@ public class RouteRepositoryImpl : IRouteRepository
             TargetSector = route.TargetSector,
             StartTime = route.StartTime,
             EndTime = route.EndTime,
+            DaysOfWeek = route.DaysOfWeek?.ToList() ?? [],
             Status = route.Status
         };
 
@@ -79,6 +80,7 @@ public class RouteRepositoryImpl : IRouteRepository
         entity.CampuseId = route.CampuseId;
         entity.StartTime = route.StartTime;
         entity.EndTime = route.EndTime;
+        entity.DaysOfWeek = route.DaysOfWeek?.ToList() ?? [];
         entity.Status = route.Status;
 
         await _context.SaveChangesAsync(ct);
@@ -92,7 +94,7 @@ public class RouteRepositoryImpl : IRouteRepository
         if (entity is null)
             throw new InvalidOperationException($"Route not found: {id}");
 
-        // Borrado lógico: RouteStop, RouteExecution y asignaciones la referencian sin cascada.
+        // Borrado lï¿½gico: RouteStop, RouteExecution y asignaciones la referencian sin cascada.
         entity.Status = Status.Inactive;
         await _context.SaveChangesAsync(ct);
     }
@@ -105,6 +107,7 @@ public class RouteRepositoryImpl : IRouteRepository
         TargetSector = entity.TargetSector,
         StartTime = entity.StartTime,
         EndTime = entity.EndTime,
+        DaysOfWeek = entity.DaysOfWeek?.ToList() ?? [],
         Status = entity.Status
     };
 }

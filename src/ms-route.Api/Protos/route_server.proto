@@ -34,6 +34,7 @@ message CreateRouteRequest {
   string target_sector = 3;
   string start_time = 4;
   string end_time = 5;
+  repeated string days_of_week = 6;
 }
 
 message CreateRouteResponse {
@@ -43,6 +44,7 @@ message CreateRouteResponse {
   string status = 4;
   string start_time = 5;
   string end_time = 6;
+  repeated string days_of_week = 7;
 }
 
 message GetRouteRequest {
@@ -57,6 +59,7 @@ message GetRouteResponse {
   string campuse_id = 5;
   string start_time = 6;
   string end_time = 7;
+  repeated string days_of_week = 8;
 }
 
 message ListRoutesRequest {}
@@ -64,6 +67,7 @@ message ListRoutesRequest {}
 message RouteListItem {
   string id = 1;
   string name = 2;
+  repeated string days_of_week = 3;
 }
 
 message ListRoutesResponse {
@@ -77,6 +81,7 @@ message UpdateRouteRequest {
   string target_sector = 4;
   string start_time = 5;
   string end_time = 6;
+  repeated string days_of_week = 7;
 }
 
 message UpdateRouteResponse {
@@ -86,6 +91,7 @@ message UpdateRouteResponse {
   string status = 4;
   string start_time = 5;
   string end_time = 6;
+  repeated string days_of_week = 7;
 }
 
 message DeleteRouteRequest {

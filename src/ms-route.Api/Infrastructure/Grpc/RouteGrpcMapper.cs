@@ -41,7 +41,8 @@ public static class RouteGrpcMapper
         Name = request.Name,
         TargetSector = request.TargetSector,
         StartTime = ParseTime(request.StartTime),
-        EndTime = ParseTime(request.EndTime)
+        EndTime = ParseTime(request.EndTime),
+        DaysOfWeek = request.DaysOfWeek.ToList()
     };
 
     /// <summary>DTO de actualizacion de ruta construido desde la peticion gRPC.</summary>
@@ -51,19 +52,25 @@ public static class RouteGrpcMapper
         Name = request.Name,
         TargetSector = request.TargetSector,
         StartTime = ParseTime(request.StartTime),
-        EndTime = ParseTime(request.EndTime)
+        EndTime = ParseTime(request.EndTime),
+        DaysOfWeek = request.DaysOfWeek.ToList()
     };
 
     /// <summary>Respuesta de creacion de ruta construida desde el DTO de salida.</summary>
-    public static CreateRouteResponse ToCreateRouteResponse(RouteResponseDto result) => new()
+    public static CreateRouteResponse ToCreateRouteResponse(RouteResponseDto result)
     {
-        Id = result.Id.ToString(),
-        Name = result.Name,
-        TargetSector = result.TargetSector,
-        Status = result.Status,
-        StartTime = result.StartTime.ToString("HH:mm:ss"),
-        EndTime = result.EndTime.ToString("HH:mm:ss")
-    };
+        var response = new CreateRouteResponse
+        {
+            Id = result.Id.ToString(),
+            Name = result.Name,
+            TargetSector = result.TargetSector,
+            Status = result.Status,
+            StartTime = result.StartTime.ToString("HH:mm:ss"),
+            EndTime = result.EndTime.ToString("HH:mm:ss")
+        };
+        response.DaysOfWeek.AddRange(result.DaysOfWeek);
+        return response;
+    }
 
     public static IEnumerable<StopItem> ToProtoStops(IEnumerable<StopDetailDto> stops) =>
         stops.Select(s => new StopItem

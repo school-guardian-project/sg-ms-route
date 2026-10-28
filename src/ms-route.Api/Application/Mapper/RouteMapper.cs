@@ -29,6 +29,7 @@ public sealed class RouteMapper : IRouteMapper
             route.TargetSector,
             route.StartTime,
             route.EndTime,
+            route.DaysOfWeek,
             0); // StopsCount needs to be calculated externally
     }
 
@@ -41,6 +42,7 @@ public sealed class RouteMapper : IRouteMapper
             route.TargetSector,
             route.StartTime,
             route.EndTime,
+            route.DaysOfWeek,
             route.Status.ToString(),
             busId,
             stops);

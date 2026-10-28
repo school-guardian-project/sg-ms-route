@@ -123,6 +123,27 @@ public class AssignBusToRouteServiceTests
     }
 
     [Test]
+    public async Task ExecuteAsync_AlAsignarBus_UsaLosDiasConfiguradosEnLaRuta()
+    {
+        var routeId = Guid.NewGuid();
+        var routes = new InMemoryRouteRepository();
+        routes.Routes.Add(new RouteModel
+        {
+            Id = routeId,
+            Name = "R-01",
+            Status = Status.Active,
+            DaysOfWeek = ["Monday", "Wednesday"]
+        });
+        var assignments = new InMemoryRouteBusAssignmentRepository();
+
+        await Service(assignments, routes).ExecuteAsync(routeId, Guid.NewGuid());
+
+        Assert.That(_schedules.Schedules, Has.Exactly(4).Items);
+        Assert.That(_schedules.Schedules.Select(schedule => schedule.DayOfWeek).Distinct(),
+            Is.EquivalentTo(new[] { DayOfWeek.Monday, DayOfWeek.Wednesday }));
+    }
+
+    [Test]
     public void ExecuteAsync_SiLaAsignacionSeRechaza_NoCreaHorarios()
     {
         var routeId = Guid.NewGuid();

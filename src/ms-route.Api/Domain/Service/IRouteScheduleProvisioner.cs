@@ -29,4 +29,13 @@ public interface IRouteScheduleProvisioner
         Guid routeBusAssignmentId,
         TimeOnly startTime,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Reconciles active schedules with the route's configured workdays and start time.
+    /// </summary>
+    Task SyncSchedulesAsync(
+        Guid routeBusAssignmentId,
+        TimeOnly startTime,
+        IEnumerable<DayOfWeek> days,
+        CancellationToken ct = default);
 }
