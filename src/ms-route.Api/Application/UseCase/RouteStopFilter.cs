@@ -19,7 +19,7 @@ public class RouteStopFilter : IRouteStopFilter
         if (isParent && studentProfileId.HasValue)
         {
             // Padre: solo parada casa (asignada) + parada colegio (OrderSequence max)
-            var assignedStop = filteredStops.FirstOrDefault(rs => rs.StopId == assignment?.RouteStopId);
+            var assignedStop = filteredStops.FirstOrDefault(rs => rs.Id == assignment?.RouteStopId);
             var schoolStop = filteredStops.OrderByDescending(rs => rs.OrderSequence).FirstOrDefault();
 
             var stopsToInclude = new List<RouteStop>();
@@ -31,7 +31,7 @@ public class RouteStopFilter : IRouteStopFilter
         else if (studentProfileId.HasValue && !isParent)
         {
             // Estudiante: solo su parada asignada
-            var assignedStop = filteredStops.FirstOrDefault(rs => rs.StopId == assignment?.RouteStopId);
+            var assignedStop = filteredStops.FirstOrDefault(rs => rs.Id == assignment?.RouteStopId);
             if (assignedStop != null) filteredStops = new[] { assignedStop };
             else filteredStops = Enumerable.Empty<RouteStop>();
         }

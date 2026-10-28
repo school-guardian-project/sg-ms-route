@@ -27,3 +27,17 @@ The existing test project currently has unrelated compilation errors in its
 older schedule-creation tests. The new lookup tests and existing route/trip
 regressions were also run successfully using an isolated temporary test project
 referencing the API and the existing fakes, without changing those older tests.
+
+## Student, stop and route assignment
+
+Student assignment uses the IAM profile ID. `RouteStudentAssignments.RouteStopId`
+references `RouteStop.Id`, not the physical `Stop.Id`; that link resolves both the
+route and the student's stop. Student/parent stop filters compare those link IDs.
+New assignments only accept active route-stop links, so an inactive historical
+link cannot hide an otherwise successful assignment.
+
+Regression checks (no database connection required):
+
+```shell
+dotnet test tests/ms-route.Tests --filter "FullyQualifiedName~RouteStopFilterTests|FullyQualifiedName~AssignStudentToRouteServiceTests|FullyQualifiedName~GetStudentRouteServiceTests|FullyQualifiedName~GetStudentStopOnRouteServiceTests"
+```

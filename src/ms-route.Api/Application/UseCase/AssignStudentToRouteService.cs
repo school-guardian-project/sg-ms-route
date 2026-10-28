@@ -21,7 +21,7 @@ public class AssignStudentToRouteService : IAssignStudentToRouteUseCase
     public async Task<StudentAssignmentDto> ExecuteAsync(Guid routeId, Guid studentId, Guid stopId, CancellationToken ct = default)
     {
         var routeStops = await _routeStopRepository.GetByRouteIdAsync(routeId, ct);
-        var routeStop = routeStops.FirstOrDefault(rs => rs.StopId == stopId);
+        var routeStop = routeStops.FirstOrDefault(rs => rs.StopId == stopId && rs.Status == Status.Active);
         if (routeStop is null)
             throw new InvalidOperationException("The stop does not belong to this route");
 

@@ -8,6 +8,38 @@ namespace ms_route.Tests.Route;
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class AssignStudentToRouteServiceTests
 {
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task ExecuteAsync_DoesNotAssignStudentToAnInactiveRouteStop(bool hasActiveLink)
+    {
+        var routeId = Guid.NewGuid();
+        var stopId = Guid.NewGuid();
+        var routeStopRepo = new InMemoryRouteStopRepository();
+        routeStopRepo.RouteStops.Add(new RouteStop
+        {
+            Id = Guid.NewGuid(), RouteId = routeId, StopId = stopId, Status = Status.Inactive
+        });
+        var activeLinkId = Guid.NewGuid();
+        if (hasActiveLink)
+            routeStopRepo.RouteStops.Add(new RouteStop
+            {
+                Id = activeLinkId, RouteId = routeId, StopId = stopId, Status = Status.Active
+            });
+        var assignments = new InMemoryRouteStudentAssignmentRepository();
+        var service = new AssignStudentToRouteService(assignments, routeStopRepo);
+
+        if (hasActiveLink)
+        {
+            await service.ExecuteAsync(routeId, Guid.NewGuid(), stopId);
+            Assert.That(assignments.Assignments.Single().RouteStopId, Is.EqualTo(activeLinkId));
+        }
+        else
+        {
+            Assert.ThrowsAsync<InvalidOperationException>(() => service.ExecuteAsync(routeId, Guid.NewGuid(), stopId));
+            Assert.That(assignments.Assignments, Is.Empty);
+        }
+    }
+
     [Test]
     public async Task ExecuteAsync_ConParadaDeLaRuta_GuardaElIdDeLaRouteStop()
     {
@@ -35,6 +67,19 @@ public class AssignStudentToRouteServiceTests
         Assert.That(result.StudentId, Is.EqualTo(studentId));
         Assert.That(result.StopId, Is.EqualTo(stopId));
         Assert.That(result.Status, Is.EqualTo("Active"));
+
+        var stops = new InMemoryStopRepository();
+        stops.Stops.Add(new ms_route.Api.Domain.Model.Stop { Id = stopId, Name = "Assigned stop" });
+        var lookup = new GetStudentStopOnRouteService(assignmentRepo, routeStopRepo, stops);
+        var savedAssignment = await lookup.ExecuteAsync(routeId, studentId);
+        Assert.That(savedAssignment, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(savedAssignment!.StudentProfileId, Is.EqualTo(studentId));
+            Assert.That(savedAssignment.RouteId, Is.EqualTo(routeId));
+            Assert.That(savedAssignment.StopId, Is.EqualTo(stopId));
+            Assert.That(savedAssignment.RouteStopId, Is.EqualTo(routeStopId));
+        });
     }
 
     [Test]
