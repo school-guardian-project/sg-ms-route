@@ -1,6 +1,7 @@
 using ms_route.Api.Application.Dto;
 using ms_route.Api.Application.UseCase;
 using ms_route.Api.Domain.Model;
+using ms_route.Api.Domain.Service;
 using ms_route.Tests.Fakes;
 using NUnit.Framework;
 using RouteModel = ms_route.Api.Domain.Model.Route;
@@ -44,7 +45,7 @@ public class CreateRouteScheduleServiceTests
         var assignments = AssignmentFor(routeId);
         var schedules = new InMemoryRouteScheduleRepository();
         var routes = RouteFor(routeId);
-        var service = new CreateRouteScheduleService(schedules, assignments, routes);
+        var service = new CreateRouteScheduleService(new RouteScheduleProvisioner(schedules), assignments, routes);
 
         var result = await service.ExecuteAsync(routeId, new RouteRequestDto
         {
@@ -64,7 +65,7 @@ public class CreateRouteScheduleServiceTests
         var schedules = new InMemoryRouteScheduleRepository();
         var assignments = new InMemoryRouteBusAssignmentRepository();
         var routes = RouteFor(routeId);
-        var service = new CreateRouteScheduleService(schedules, assignments, routes);
+        var service = new CreateRouteScheduleService(new RouteScheduleProvisioner(schedules), assignments, routes);
 
         Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.ExecuteAsync(routeId, new RouteRequestDto
@@ -82,7 +83,7 @@ public class CreateRouteScheduleServiceTests
         var schedules = new InMemoryRouteScheduleRepository();
         var assignments = AssignmentFor(routeId);
         var routes = RouteFor(routeId);
-        var service = new CreateRouteScheduleService(schedules, assignments, routes);
+        var service = new CreateRouteScheduleService(new RouteScheduleProvisioner(schedules), assignments, routes);
 
         Assert.ThrowsAsync<ArgumentException>(() =>
             service.ExecuteAsync(routeId, new RouteRequestDto
@@ -98,7 +99,7 @@ public class CreateRouteScheduleServiceTests
         var schedules = new InMemoryRouteScheduleRepository();
         var assignments = AssignmentFor(routeId);
         var routes = RouteFor(routeId);
-        var service = new CreateRouteScheduleService(schedules, assignments, routes);
+        var service = new CreateRouteScheduleService(new RouteScheduleProvisioner(schedules), assignments, routes);
 
         Assert.ThrowsAsync<ArgumentException>(() =>
             service.ExecuteAsync(routeId, new RouteRequestDto
@@ -123,7 +124,7 @@ public class CreateRouteScheduleServiceTests
             Status = Status.Active
         });
         var routes = RouteFor(routeId);
-        var service = new CreateRouteScheduleService(schedules, assignments, routes);
+        var service = new CreateRouteScheduleService(new RouteScheduleProvisioner(schedules), assignments, routes);
 
         var result = await service.ExecuteAsync(routeId, new RouteRequestDto
         {
@@ -133,5 +134,22 @@ public class CreateRouteScheduleServiceTests
         // Should only create Vuelta since Ida already exists
         Assert.That(result.Count, Is.EqualTo(1));
         Assert.That(result[0].Direction, Is.EqualTo("Vuelta"));
+    }
+
+    [Test]
+    public void ExecuteAsync_ConUnDiaInvalidoEntreValidos_NoCreaNingunHorario()
+    {
+        var routeId = Guid.NewGuid();
+        var schedules = new InMemoryRouteScheduleRepository();
+        var service = new CreateRouteScheduleService(
+            new RouteScheduleProvisioner(schedules), AssignmentFor(routeId), RouteFor(routeId));
+
+        Assert.ThrowsAsync<ArgumentException>(() =>
+            service.ExecuteAsync(routeId, new RouteRequestDto
+            {
+                DaysOfWeek = new List<string> { "Monday", "Sunday" }
+            }));
+
+        Assert.That(schedules.Schedules, Is.Empty);
     }
 }

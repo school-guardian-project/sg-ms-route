@@ -81,6 +81,16 @@ public class RouteScheduleRepositoryImpl : IRouteScheduleRepository
         return ToDomain(entity);
     }
 
+    public async Task UpdateStartTimeAsync(
+        Guid routeBusAssignmentId,
+        TimeOnly startTime,
+        CancellationToken ct = default)
+    {
+        await _context.RouteSchedules
+            .Where(s => s.RouteBusAssignmentsId == routeBusAssignmentId && s.Status == Status.Active)
+            .ExecuteUpdateAsync(set => set.SetProperty(s => s.StartTime, startTime), ct);
+    }
+
     private static RouteSchedule ToDomain(RouteScheduleEntity entity) => new()
     {
         Id = entity.Id,

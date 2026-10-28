@@ -19,4 +19,10 @@ public interface IRouteScheduleRepository
         CancellationToken ct = default);
 
     Task<RouteSchedule> SaveAsync(RouteSchedule schedule, CancellationToken ct = default);
+
+    /// <summary>Cambia la hora de salida de los horarios activos de la asignacion.</summary>
+    Task UpdateStartTimeAsync(
+        Guid routeBusAssignmentId,
+        TimeOnly startTime,
+        CancellationToken ct = default);
 }

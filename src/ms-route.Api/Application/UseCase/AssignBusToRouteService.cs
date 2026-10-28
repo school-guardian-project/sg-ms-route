@@ -3,6 +3,7 @@ using ms_route.Api.Application.Dto;
 using ms_route.Api.Domain.Model;
 using ms_route.Api.Domain.Ports.In;
 using ms_route.Api.Domain.Ports.Out;
+using ms_route.Api.Domain.Service;
 
 namespace ms_route.Api.Application.UseCase;
 
@@ -10,15 +11,18 @@ public class AssignBusToRouteService : IAssignBusToRouteUseCase
 {
     private readonly IRouteBusAssignmentRepository _assignmentRepository;
     private readonly IRouteRepository _routeRepository;
+    private readonly IRouteScheduleProvisioner _scheduleProvisioner;
     private readonly IMapper _mapper;
 
     public AssignBusToRouteService(
         IRouteBusAssignmentRepository assignmentRepository,
         IRouteRepository routeRepository,
+        IRouteScheduleProvisioner scheduleProvisioner,
         IMapper mapper)
     {
         _assignmentRepository = assignmentRepository;
         _routeRepository = routeRepository;
+        _scheduleProvisioner = scheduleProvisioner;
         _mapper = mapper;
     }
 
@@ -46,6 +50,11 @@ public class AssignBusToRouteService : IAssignBusToRouteUseCase
         };
 
         var saved = await _assignmentRepository.SaveAsync(assignment, ct);
+
+        // Los horarios cuelgan de la asignacion: sin ellos el conductor nunca ve
+        // habilitado el inicio del viaje. Se crean con la hora de salida de la ruta.
+        await _scheduleProvisioner.EnsureSchedulesAsync(
+            saved.Id, route.StartTime, RouteScheduleProvisioner.WorkingDays, ct);
 
         return _mapper.Map<BusAssignmentDto>(saved);
     }
