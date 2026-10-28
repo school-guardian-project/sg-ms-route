@@ -52,6 +52,7 @@ public static class ServiceCollectionExtensions
         // Trip lifecycle services (Domain + Infrastructure)
         services.AddScoped<ITripBoardingQuery, TripBoardingQueryRepository>();
         services.AddScoped<ITripLifecycleService, TripLifecycleService>();
+        services.AddScoped<IRouteScheduleProvisioner, RouteScheduleProvisioner>();
         services.AddScoped<IGetTripStatusMapper, GetTripStatusMapper>();
 
         services.AddHttpContextAccessor();

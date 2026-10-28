@@ -41,4 +41,15 @@ public class InMemoryRouteScheduleRepository : IRouteScheduleRepository
         Schedules.Add(schedule);
         return Task.FromResult(schedule);
     }
+
+    public Task UpdateStartTimeAsync(
+        Guid routeBusAssignmentId,
+        TimeOnly startTime,
+        CancellationToken ct = default)
+    {
+        foreach (var schedule in Schedules.Where(s =>
+                     s.RouteBusAssignmentsId == routeBusAssignmentId && s.Status == Status.Active))
+            schedule.StartTime = startTime;
+        return Task.CompletedTask;
+    }
 }
