@@ -15,6 +15,5 @@ public class RouteConfiguration : IEntityTypeConfiguration<RouteEntity>
         builder.Property(x => x.StartTime).IsRequired();
         builder.Property(x => x.EndTime).IsRequired();
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
-        builder.HasIndex(x => x.Name).IsUnique();
     }
 }

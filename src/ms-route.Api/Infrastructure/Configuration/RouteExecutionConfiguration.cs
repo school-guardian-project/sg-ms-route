@@ -15,5 +15,6 @@ public class RouteExecutionConfiguration : IEntityTypeConfiguration<RouteExecuti
         builder.Property(x => x.StartDateTime).IsRequired();
         builder.Property(x => x.EndDateTime);
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
+        builder.Property(x => x.Direction).IsUnicode(false).HasMaxLength(10).HasDefaultValue("Ida").IsRequired();
     }
 }
