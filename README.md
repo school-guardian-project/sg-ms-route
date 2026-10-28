@@ -9,6 +9,21 @@ Kestrel listen on it. The listener URLs can be overridden with the corresponding
 `Fleet__GrpcAddress` defaults to `http://ms-fleet:5001`; configure
 `Fleet__ApiKey` privately when required by fleet.
 
+The gRPC clients also use the existing internal service addresses when no
+override is supplied: `http://ms-fleet:5001` and
+`http://ms-user-management:5001`. `Fleet__GrpcAddress` and
+`Family__GrpcAddress` continue to override them. This applies to direct
+container launches as well as Compose; it does not change configured
+connections or API keys.
+
+Previously, resolving `RouteDetailController` without these keys threw
+`InvalidOperationException` before reading the student assignment. The HTTP
+middleware reports such exceptions as 409, so a saved assignment could not be
+displayed by either client. A production-registration regression now reproduces
+the constructor failure and checks that the controller resolves without opening
+a database connection. A deployed 409 still requires its ProblemDetails `detail`
+to confirm its exact cause; HTTP status alone is not sufficient.
+
 The internal `GetRouteByExecutionId` RPC resolves the stored execution and its
 route so notification alerts can display the actual route name. Missing records
 return `Found=false`; historical/inactive trips are still resolvable.
@@ -41,3 +56,9 @@ Regression checks (no database connection required):
 ```shell
 dotnet test tests/ms-route.Tests --filter "FullyQualifiedName~RouteStopFilterTests|FullyQualifiedName~AssignStudentToRouteServiceTests|FullyQualifiedName~GetStudentRouteServiceTests|FullyQualifiedName~GetStudentStopOnRouteServiceTests"
 ```
+
+The full suite passes 118 tests locally, including controller dependency
+resolution and assign/read/reassign across student profile, stop, route, bus
+and driver. The relationship tests use in-memory repository fakes: they do not
+certify real SQL persistence or reachability/authentication of deployed gRPC
+services. No schema migration or deployed data change is part of this fix.

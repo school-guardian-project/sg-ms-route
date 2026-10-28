@@ -16,6 +16,7 @@ services:
       Kestrel__Endpoints__Grpc__Url: "${Kestrel__Endpoints__Grpc__Url:-http://+:5001}"
       Kestrel__Endpoints__Grpc__Protocols: Http2
       Fleet__GrpcAddress: "${Fleet__GrpcAddress:-http://ms-fleet:5001}"
+      Family__GrpcAddress: "${Family__GrpcAddress:-http://ms-user-management:5001}"
     networks:
       - sg-services-network
 

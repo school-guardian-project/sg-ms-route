@@ -119,6 +119,46 @@ public class GetStudentRouteServiceTests
     }
 
     [Test]
+    public async Task AssignThenRead_ConnectsStudentStopRouteBusAndDriver_AndReflectsStopReassignment()
+    {
+        _studentAssignments.Assignments.Clear();
+        var link = _routeStops.RouteStops.Single();
+        var assign = new AssignStudentToRouteService(_studentAssignments, _routeStops);
+        await assign.ExecuteAsync(_routeId, _studentId, link.StopId);
+
+        var result = await CreateService().ExecuteAsync(_studentId);
+        Assert.That(result, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Id, Is.EqualTo(_routeId));
+            Assert.That(result.Stops.Single().Id, Is.EqualTo(link.StopId));
+            Assert.That(result.Bus!.Id, Is.EqualTo(_busId));
+            Assert.That(result.Bus.DriverProfileId, Is.EqualTo(_driverId));
+        });
+
+        var replacementStopId = AddStop();
+        var replacementLink = new RouteStop
+        {
+            Id = Guid.NewGuid(), RouteId = _routeId, StopId = replacementStopId,
+            OrderSequence = 2, Status = Status.Active
+        };
+        _routeStops.RouteStops.Add(replacementLink);
+        await assign.ExecuteAsync(_routeId, _studentId, replacementStopId);
+
+        var stop = await new GetStudentStopOnRouteService(_studentAssignments, _routeStops, _stops)
+            .ExecuteAsync(_routeId, _studentId);
+        var filtered = await CreateService().ExecuteAsync(_studentId, studentProfileId: _studentId);
+        Assert.Multiple(() =>
+        {
+            Assert.That(_studentAssignments.Assignments, Has.Count.EqualTo(1));
+            Assert.That(stop!.RouteStopId, Is.EqualTo(replacementLink.Id));
+            Assert.That(stop.StopId, Is.EqualTo(replacementStopId));
+            Assert.That(filtered!.Stops.Single().Id, Is.EqualTo(replacementStopId));
+            Assert.That(filtered.Bus!.Id, Is.EqualTo(_busId));
+        });
+    }
+
+    [Test]
     public async Task ExecuteAsync_SinAsignacionDeEstudiante_RetornaNull()
     {
         var result = await CreateService().ExecuteAsync(Guid.NewGuid());

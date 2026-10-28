@@ -23,7 +23,7 @@ public sealed class FleetGrpcClient : IFleetService, IDisposable
     public FleetGrpcClient(IConfiguration configuration)
     {
         var address = configuration["Fleet:GrpcAddress"]
-            ?? throw new InvalidOperationException("Missing Fleet:GrpcAddress (set it in .env)");
+            ?? "http://ms-fleet:5001";
         _channel = GrpcChannel.ForAddress(address);
         _client = new RouteService.RouteServiceClient(_channel);
         _apiKey = configuration["Fleet:ApiKey"] ?? string.Empty;

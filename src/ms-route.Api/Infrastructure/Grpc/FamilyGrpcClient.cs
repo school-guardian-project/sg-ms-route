@@ -21,7 +21,7 @@ public sealed class FamilyGrpcClient : IStudentGuardianDirectory, IDisposable
     {
         _channel = GrpcChannel.ForAddress(
             configuration["Family:GrpcAddress"]
-            ?? throw new InvalidOperationException("Missing Family:GrpcAddress (set it in .env)"));
+            ?? "http://ms-user-management:5001");
         _client = new FamilyService.FamilyServiceClient(_channel);
     }
 
