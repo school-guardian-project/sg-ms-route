@@ -21,6 +21,7 @@ public sealed class TripLifecycleService : ITripLifecycleService
 
     // Configuración por defecto
     public static readonly TimeSpan DefaultStartGracePeriod = TimeSpan.FromMinutes(20);
+    public static readonly TimeSpan EarlyStart = TimeSpan.FromMinutes(10);
     public static readonly TimeSpan DefaultNotificationBeforeStart = TimeSpan.FromMinutes(30);
 
     public TripLifecycleService(
@@ -43,9 +44,14 @@ public sealed class TripLifecycleService : ITripLifecycleService
         TimeSpan? gracePeriod = null,
         CancellationToken ct = default)
     {
-        var window = TripStartWindow.Create(scheduleStartTime, gracePeriod ?? _defaultStartGracePeriod);
-        return Task.FromResult(window.IsWithinWindow(localNow));
+        return Task.FromResult(StartWindowFor(scheduleStartTime, gracePeriod).IsWithinWindow(localNow));
     }
+
+    // La ventana abre 10 minutos antes de la hora programada y cierra tras la gracia.
+    private TripStartWindow StartWindowFor(TimeOnly scheduleStartTime, TimeSpan? gracePeriod = null) =>
+        TripStartWindow.Create(
+            scheduleStartTime.Add(-EarlyStart),
+            (gracePeriod ?? _defaultStartGracePeriod) + EarlyStart);
 
     public async Task<bool> CanEndTripAsync(
         Guid tripId,
@@ -110,7 +116,7 @@ public sealed class TripLifecycleService : ITripLifecycleService
 
         // Notificar si estamos en la ventana de notificación (30 min antes) pero NO en la ventana de inicio
         var inNotificationWindow = notifyWindow.IsWithinWindow(localNow);
-        var inStartWindow = TripStartWindow.Create(scheduleStartTime, _defaultStartGracePeriod).IsWithinWindow(localNow);
+        var inStartWindow = StartWindowFor(scheduleStartTime).IsWithinWindow(localNow);
 
         return Task.FromResult(inNotificationWindow && !inStartWindow);
     }

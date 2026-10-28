@@ -93,7 +93,7 @@ public class StartTripService : IStartTripUseCase
         {
             var windowClosesAt = todaysSchedule.StartTime.Add(TripLifecycleService.DefaultStartGracePeriod);
             throw new InvalidOperationException(
-                $"Trip can only be started between {todaysSchedule.StartTime:HH:mm} and {windowClosesAt:HH:mm}. " +
+                $"Trip can only be started between {todaysSchedule.StartTime.Add(-TripLifecycleService.EarlyStart):HH:mm} and {windowClosesAt:HH:mm}. " +
                 $"Current time: {localNow:HH:mm}");
         }
 

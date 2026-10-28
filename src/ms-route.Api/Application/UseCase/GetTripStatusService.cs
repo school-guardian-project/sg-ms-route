@@ -133,9 +133,9 @@ public class GetTripStatusService : IGetTripStatusUseCase
 
         return status switch
         {
-            TripLifecycleStatus.ReadyToStart => $"Puede iniciar la ruta (ventana: {scheduleStartTime:HH:mm} - {scheduleStartTime.Add(TripLifecycleService.DefaultStartGracePeriod):HH:mm})",
+            TripLifecycleStatus.ReadyToStart => $"Puede iniciar la ruta (ventana: {scheduleStartTime.Add(-TripLifecycleService.EarlyStart):HH:mm} - {scheduleStartTime.Add(TripLifecycleService.DefaultStartGracePeriod):HH:mm})",
             TripLifecycleStatus.NotStarted when shouldNotify => $"Ruta programada para {scheduleStartTime:HH:mm}. Inicio disponible en {minutesUntilStart} min.",
-            TripLifecycleStatus.NotStarted => $"Ruta programada para {scheduleStartTime:HH:mm}. El botón de inicio estará disponible a partir de esa hora.",
+            TripLifecycleStatus.NotStarted => $"Ruta programada para {scheduleStartTime:HH:mm}. El botón de inicio estará disponible 10 minutos antes.",
             _ => "Estado desconocido"
         };
     }
