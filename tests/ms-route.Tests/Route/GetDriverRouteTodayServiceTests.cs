@@ -120,7 +120,7 @@ public class GetDriverRouteTodayServiceTests
     }
 
     [Test]
-    public async Task ExecuteAsync_AntesDeLaSalida_RetornaScheduledParaHoySinParadas()
+    public async Task ExecuteAsync_AntesDeLaSalida_RetornaScheduledParaHoyConParadas()
     {
         AddStopToRoute();
         var service = CreateService(Local(Monday, new TimeOnly(5, 0)));
@@ -129,7 +129,7 @@ public class GetDriverRouteTodayServiceTests
 
         Assert.That(result.Status, Is.EqualTo(DriverRouteStatus.Scheduled));
         Assert.That(result.Route, Is.Not.Null);
-        Assert.That(result.Route.Stops, Is.Empty);
+        Assert.That(result.Route.Stops, Has.Exactly(1).Items);
         Assert.That(result.NextOccurrence, Is.EqualTo(Local(Monday, RouteStart)));
     }
 

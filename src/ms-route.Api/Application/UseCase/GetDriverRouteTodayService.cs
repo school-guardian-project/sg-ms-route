@@ -87,9 +87,12 @@ public class GetDriverRouteTodayService : IGetDriverRouteTodayUseCase
             DriverName = bus.DriverName
         };
 
+        // Las paradas viajan siempre: el conductor debe ver el detalle de su
+        // recorrido aunque aun no sea la hora de salida.
+        await PopulateStopsAsync(detail, route.Id, ct);
+
         if (activeSchedule is not null)
         {
-            await PopulateStopsAsync(detail, route.Id, ct);
             return new DriverRouteTodayDto
             {
                 Status = DriverRouteStatus.Active,
@@ -107,8 +110,6 @@ public class GetDriverRouteTodayService : IGetDriverRouteTodayUseCase
             };
         }
 
-        // Sin paradas hasta que la ruta este activa: el conductor no debe
-        // ver el recorrido antes de tiempo, solo el recordatorio.
         return new DriverRouteTodayDto
         {
             Status = DriverRouteStatus.Scheduled,
