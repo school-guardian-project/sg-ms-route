@@ -62,3 +62,16 @@ resolution and assign/read/reassign across student profile, stop, route, bus
 and driver. The relationship tests use in-memory repository fakes: they do not
 certify real SQL persistence or reachability/authentication of deployed gRPC
 services. No schema migration or deployed data change is part of this fix.
+
+## Driver and bus details
+
+The fleet gRPC driver lookup only returns bus ID and plate. The route client
+now follows that ID through the existing `GetBusDetails` RPC so the driver's
+route includes capacity, driver profile ID and driver name as well. Configured
+addresses, API keys and protocol contracts are unchanged. Missing bus details
+resolve to no assignment; authentication and service failures propagate.
+
+`FleetGrpcClientTests` exercises both lookups over loopback HTTP/2 using real
+protobuf messages, checking metadata, deadlines, complete bus/driver fields and
+error propagation. This verifies the client contract against a controlled test
+server, not production fleet/IAM connectivity or real database persistence.

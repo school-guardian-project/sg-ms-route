@@ -37,13 +37,8 @@ public sealed class FleetGrpcClient : IFleetService, IDisposable
                 new GetBusAssignedToDriverRequest { ProfileId = profileId.ToString() },
                 Headers(), Deadline(), ct);
 
-            // Solo hace falta el eslabon conductor -> bus: la placa basta para
-            // resolver la ruta de ms-route (el conductor es el propio solicitante).
-            return new BusInfo
-            {
-                Id = ToGuid(response.BusId),
-                Plate = response.Plate
-            };
+            var busId = ToGuid(response.BusId);
+            return await GetBusDetailsAsync(busId, ct);
         }
         catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
         {
