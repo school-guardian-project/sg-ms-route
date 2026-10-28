@@ -13,14 +13,17 @@ public class GetRouteService : IGetRouteUseCase
     private readonly IRouteStopRepository _routeStopRepository;
     private readonly IStopRepository _stopRepository;
     private readonly IMapper _mapper;
+    private readonly IFleetService? _fleetService;
 
     public GetRouteService(
         IRouteRepository repository,
         IRouteBusAssignmentRepository assignmentRepository,
         IRouteStopRepository routeStopRepository,
         IStopRepository stopRepository,
-        IMapper mapper)
+        IMapper mapper,
+        IFleetService? fleetService = null)
     {
+        _fleetService = fleetService;
         _repository = repository;
         _assignmentRepository = assignmentRepository;
         _routeStopRepository = routeStopRepository;
@@ -38,6 +41,28 @@ public class GetRouteService : IGetRouteUseCase
 
         var assignment = await _assignmentRepository.GetActiveByRouteIdAsync(id, ct);
         dto.BusId = assignment?.BusId;
+        if (assignment is not null && _fleetService is not null)
+        {
+            try
+            {
+                var bus = await _fleetService.GetBusDetailsAsync(assignment.BusId, ct);
+                if (bus is not null)
+                {
+                    dto.Bus = new RouteBusDto
+                    {
+                        Id = bus.Id,
+                        Plate = bus.Plate,
+                        Capacity = bus.Capacity,
+                        DriverProfileId = bus.DriverProfileId,
+                        DriverName = bus.DriverName
+                    };
+                }
+            }
+            catch (Exception)
+            {
+                // El detalle de la ruta no debe fallar si ms-fleet no responde.
+            }
+        }
 
         var routeStops = await _routeStopRepository.GetByRouteIdAsync(id, ct);
         var stops = await _stopRepository.GetByIdsAsync(routeStops.Select(rs => rs.StopId), ct);
