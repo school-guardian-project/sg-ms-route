@@ -7,7 +7,7 @@ using ms_route.Api.Domain.Ports.In;
 namespace ms_route.Api.Infrastructure.Controller;
 
 [ApiController]
-[Route("api/routes")]
+[Route("api/v1/routes")]
 public class RouteController : ControllerBase
 {
     private readonly ICreateRouteUseCase _createUseCase;

@@ -4,7 +4,7 @@ using ms_route.Api.Domain.Ports.In;
 namespace ms_route.Api.Infrastructure.Controller;
 
 [ApiController]
-[Route("api/cities")]
+[Route("api/v1/cities")]
 public class CityController : ControllerBase
 {
     private readonly IListCityUseCase _listUseCase;
