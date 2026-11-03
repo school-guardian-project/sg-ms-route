@@ -1,77 +1,52 @@
 # sg-ms-route
 
-## Docker listeners
+Route management microservice for School Guardian, handling routes, stops, cities, and student-to-route assignments with HTTP/1 for Kong and HTTP/2 for internal gRPC clients.
 
-Compose keeps HTTP/1 on port 8080 for Kong and enables HTTP/2 without TLS on
-port 5001 for internal gRPC clients. Publishing a port alone does not make
-Kestrel listen on it. The listener URLs can be overridden with the corresponding
-`Kestrel__Endpoints__Http__Url` and `Kestrel__Endpoints__Grpc__Url` variables.
-`Fleet__GrpcAddress` defaults to `http://ms-fleet:5001`; configure
-`Fleet__ApiKey` privately when required by fleet.
+## Getting Started
 
-The gRPC clients also use the existing internal service addresses when no
-override is supplied: `http://ms-fleet:5001` and
-`http://ms-user-management:5001`. `Fleet__GrpcAddress` and
-`Family__GrpcAddress` continue to override them. This applies to direct
-container launches as well as Compose; it does not change configured
-connections or API keys.
+These instructions will give you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on deploying the project on a live system.
 
-Previously, resolving `RouteDetailController` without these keys threw
-`InvalidOperationException` before reading the student assignment. The HTTP
-middleware reports such exceptions as 409, so a saved assignment could not be
-displayed by either client. A production-registration regression now reproduces
-the constructor failure and checks that the controller resolves without opening
-a database connection. A deployed 409 still requires its ProblemDetails `detail`
-to confirm its exact cause; HTTP status alone is not sufficient.
+### Prerequisites
 
-The internal `GetRouteByExecutionId` RPC resolves the stored execution and its
-route so notification alerts can display the actual route name. Missing records
-return `Found=false`; historical/inactive trips are still resolvable.
+Requirements for the software and other tools to build, test and push:
 
-An older database must first apply the existing
-`ms-route-db/01-ddl/04-alter/010-add-direction-to-route-execution.sql`
-script from the database repository if `Route.RouteExecution.Direction` is absent.
+- .NET SDK
+- Docker
+- Docker Compose
 
-Focused regression:
+### Installing
 
-```shell
-dotnet test tests/ms-route.Tests --filter FullyQualifiedName~GetRouteByExecutionIdServiceTests
-```
+A step by step series of examples that tell you how to get a development environment running.
 
-The existing test project currently has unrelated compilation errors in its
-older schedule-creation tests. The new lookup tests and existing route/trip
-regressions were also run successfully using an isolated temporary test project
-referencing the API and the existing fakes, without changing those older tests.
+Start the service with Docker Compose:
 
-## Student, stop and route assignment
+    docker compose up -d
 
-Student assignment uses the IAM profile ID. `RouteStudentAssignments.RouteStopId`
-references `RouteStop.Id`, not the physical `Stop.Id`; that link resolves both the
-route and the student's stop. Student/parent stop filters compare those link IDs.
-New assignments only accept active route-stop links, so an inactive historical
-link cannot hide an otherwise successful assignment.
+## Running the tests
 
-Regression checks (no database connection required):
+Explain how to run the automated tests for this system.
 
-```shell
-dotnet test tests/ms-route.Tests --filter "FullyQualifiedName~RouteStopFilterTests|FullyQualifiedName~AssignStudentToRouteServiceTests|FullyQualifiedName~GetStudentRouteServiceTests|FullyQualifiedName~GetStudentStopOnRouteServiceTests"
-```
+### Sample Tests
 
-The full suite passes 118 tests locally, including controller dependency
-resolution and assign/read/reassign across student profile, stop, route, bus
-and driver. The relationship tests use in-memory repository fakes: they do not
-certify real SQL persistence or reachability/authentication of deployed gRPC
-services. No schema migration or deployed data change is part of this fix.
+Explain what these tests test and why.
 
-## Driver and bus details
+### Style test
 
-The fleet gRPC driver lookup only returns bus ID and plate. The route client
-now follows that ID through the existing `GetBusDetails` RPC so the driver's
-route includes capacity, driver profile ID and driver name as well. Configured
-addresses, API keys and protocol contracts are unchanged. Missing bus details
-resolve to no assignment; authentication and service failures propagate.
+Checks if the best practices and the right coding style has been used.
 
-`FleetGrpcClientTests` exercises both lookups over loopback HTTP/2 using real
-protobuf messages, checking metadata, deadlines, complete bus/driver fields and
-error propagation. This verifies the client contract against a controlled test
-server, not production fleet/IAM connectivity or real database persistence.
+## Deployment
+
+Add additional notes to deploy this on a live system.
+
+## Built With
+
+- .NET
+- Docker Compose — Local development stack
+
+## Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## License
+
+This project is licensed under the SCHOOL GUARDIAN PROPRIETARY SOFTWARE LICENSE Version 1.0 — 2026. See the [LICENSE](LICENSE) file for details.
