@@ -1,77 +1,61 @@
-# sg-ms-route
+# Servicio Route
 
-## Docker listeners
+Route management microservice for School Guardian. Handles routes, stops, cities, and student-to-route assignments. Exposes HTTP/1 for Kong on port 8080 and HTTP/2 (gRPC) on port 5001 for internal clients.
 
-Compose keeps HTTP/1 on port 8080 for Kong and enables HTTP/2 without TLS on
-port 5001 for internal gRPC clients. Publishing a port alone does not make
-Kestrel listen on it. The listener URLs can be overridden with the corresponding
-`Kestrel__Endpoints__Http__Url` and `Kestrel__Endpoints__Grpc__Url` variables.
-`Fleet__GrpcAddress` defaults to `http://ms-fleet:5001`; configure
-`Fleet__ApiKey` privately when required by fleet.
+## Getting Started
 
-The gRPC clients also use the existing internal service addresses when no
-override is supplied: `http://ms-fleet:5001` and
-`http://ms-user-management:5001`. `Fleet__GrpcAddress` and
-`Family__GrpcAddress` continue to override them. This applies to direct
-container launches as well as Compose; it does not change configured
-connections or API keys.
+These instructions will give you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on deploying the project on a live system.
 
-Previously, resolving `RouteDetailController` without these keys threw
-`InvalidOperationException` before reading the student assignment. The HTTP
-middleware reports such exceptions as 409, so a saved assignment could not be
-displayed by either client. A production-registration regression now reproduces
-the constructor failure and checks that the controller resolves without opening
-a database connection. A deployed 409 still requires its ProblemDetails `detail`
-to confirm its exact cause; HTTP status alone is not sufficient.
+### Prerequisites
 
-The internal `GetRouteByExecutionId` RPC resolves the stored execution and its
-route so notification alerts can display the actual route name. Missing records
-return `Found=false`; historical/inactive trips are still resolvable.
+Requirements for the software and other tools to build, test and push:
 
-An older database must first apply the existing
-`ms-route-db/01-ddl/04-alter/010-add-direction-to-route-execution.sql`
-script from the database repository if `Route.RouteExecution.Direction` is absent.
+- .NET SDK
+- Docker
+- Docker Compose
+- The `sg-services-network` Docker network (external, shared across services)
 
-Focused regression:
+### Installing
 
-```shell
-dotnet test tests/ms-route.Tests --filter FullyQualifiedName~GetRouteByExecutionIdServiceTests
-```
+A step by step series of examples that tell you how to get a development environment running.
 
-The existing test project currently has unrelated compilation errors in its
-older schedule-creation tests. The new lookup tests and existing route/trip
-regressions were also run successfully using an isolated temporary test project
-referencing the API and the existing fakes, without changing those older tests.
+Create the external network if it does not exist:
 
-## Student, stop and route assignment
+    docker network create sg-services-network
 
-Student assignment uses the IAM profile ID. `RouteStudentAssignments.RouteStopId`
-references `RouteStop.Id`, not the physical `Stop.Id`; that link resolves both the
-route and the student's stop. Student/parent stop filters compare those link IDs.
-New assignments only accept active route-stop links, so an inactive historical
-link cannot hide an otherwise successful assignment.
+Start the service:
 
-Regression checks (no database connection required):
+    docker compose up -d
 
-```shell
-dotnet test tests/ms-route.Tests --filter "FullyQualifiedName~RouteStopFilterTests|FullyQualifiedName~AssignStudentToRouteServiceTests|FullyQualifiedName~GetStudentRouteServiceTests|FullyQualifiedName~GetStudentStopOnRouteServiceTests"
-```
+The service listens on HTTP/1 port 8080 and HTTP/2 gRPC port 5001. gRPC addresses for fleet (`ms-fleet`) and family (`ms-user-management`) are configured via environment variables. Environment variables are loaded from `.env`.
 
-The full suite passes 118 tests locally, including controller dependency
-resolution and assign/read/reassign across student profile, stop, route, bus
-and driver. The relationship tests use in-memory repository fakes: they do not
-certify real SQL persistence or reachability/authentication of deployed gRPC
-services. No schema migration or deployed data change is part of this fix.
+## Running the tests
 
-## Driver and bus details
+Explain how to run the automated tests for this system.
 
-The fleet gRPC driver lookup only returns bus ID and plate. The route client
-now follows that ID through the existing `GetBusDetails` RPC so the driver's
-route includes capacity, driver profile ID and driver name as well. Configured
-addresses, API keys and protocol contracts are unchanged. Missing bus details
-resolve to no assignment; authentication and service failures propagate.
+### Sample Tests
 
-`FleetGrpcClientTests` exercises both lookups over loopback HTTP/2 using real
-protobuf messages, checking metadata, deadlines, complete bus/driver fields and
-error propagation. This verifies the client contract against a controlled test
-server, not production fleet/IAM connectivity or real database persistence.
+Tests are executed against the test service that runs in Docker Compose for each service:
+
+    docker compose --profile tests run ms-route.tests
+
+### Style test
+
+Checks if the best practices and the right coding style has been used, validated through the test service in Docker Compose.
+
+## Deployment
+
+Deployment is performed via GitHub Actions to an AWS EC2 instance.
+
+## Built With
+
+- .NET
+- Docker Compose — Local development stack
+
+## Contributing
+
+Please read [CONTRIBUTING.md](https://github.com/school-guardian-project/.github/blob/main/CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## License
+
+This project is licensed under the SCHOOL GUARDIAN PROPRIETARY SOFTWARE LICENSE Version 1.0 — 2026. See the [LICENSE](LICENSE) file for details.
