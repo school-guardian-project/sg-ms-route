@@ -5,7 +5,7 @@ using ms_route.Api.Domain.Ports.In;
 namespace ms_route.Api.Infrastructure.Controller;
 
 [ApiController]
-[Route("api/routes")]
+[Route("api/v1/routes")]
 public class RouteDetailController : ControllerBase
 {
     private readonly IGetCurrentRouteUseCase _getCurrentRouteUseCase;

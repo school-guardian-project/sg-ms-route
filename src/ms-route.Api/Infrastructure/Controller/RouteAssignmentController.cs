@@ -7,7 +7,7 @@ using ms_route.Api.Domain.Ports.In;
 namespace ms_route.Api.Infrastructure.Controller;
 
 [ApiController]
-[Route("api/routes")]
+[Route("api/v1/routes")]
 public class RouteAssignmentController : ControllerBase
 {
     private readonly IAssignStudentToRouteUseCase _assignStudentToRouteUseCase;
