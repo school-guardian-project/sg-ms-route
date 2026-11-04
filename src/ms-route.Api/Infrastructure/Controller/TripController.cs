@@ -8,7 +8,7 @@ using ms_route.Api.Infrastructure.Auth;
 namespace ms_route.Api.Infrastructure.Controller;
 
 [ApiController]
-[Route("api/v1/trips")]
+[Route("api/trips")]
 public class TripController : ControllerBase
 {
     private readonly IStartTripUseCase _startTripUseCase;
